@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -82,6 +83,7 @@ public class AuctionItemController {
     
     // Update auction
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> updateAuction(@PathVariable String id, 
                                                                     @RequestBody UpdateAuctionRequest request) {
         try {
@@ -272,6 +274,7 @@ public class AuctionItemController {
     
     // Start auction
     @PatchMapping("/{id}/start")
+    @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> startAuction(@PathVariable String id) {
         try {
             AuctionItem auction = auctionItemService.startAuction(id);
@@ -286,6 +289,7 @@ public class AuctionItemController {
     
     // End auction
     @PatchMapping("/{id}/end")
+    @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> endAuction(@PathVariable String id) {
         try {
             AuctionItem auction = auctionItemService.endAuction(id);
@@ -300,6 +304,7 @@ public class AuctionItemController {
     
     // Cancel auction
     @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> cancelAuction(@PathVariable String id) {
         try {
             AuctionItem auction = auctionItemService.cancelAuction(id);
@@ -314,6 +319,7 @@ public class AuctionItemController {
     
     // Delete auction
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<Void>> deleteAuction(@PathVariable String id) {
         try {
             auctionItemService.deleteAuctionItem(id);

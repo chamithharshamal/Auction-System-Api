@@ -175,6 +175,12 @@ public class UserService {
         }
     }
     
+    // Check if current user is the same as the requested user (for security)
+    public boolean isCurrentUser(String currentUsername, String userId) {
+        Optional<User> currentUser = getUserByUsername(currentUsername);
+        return currentUser.isPresent() && currentUser.get().getId().equals(userId);
+    }
+    
     private void updateUserFields(User existingUser, User updatedUser) {
         if (updatedUser.getFirstName() != null) {
             existingUser.setFirstName(updatedUser.getFirstName());

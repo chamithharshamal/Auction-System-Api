@@ -204,6 +204,15 @@ public class AuctionItemService {
         return auctionItemRepository.findAll(pageable);
     }
     
+    // Check if current user is the owner of the auction (for security)
+    public boolean isAuctionOwner(String currentUsername, String auctionId) {
+        Optional<AuctionItem> auction = auctionItemRepository.findById(auctionId);
+        if (auction.isPresent()) {
+            return auction.get().getSeller().getUsername().equals(currentUsername);
+        }
+        return false;
+    }
+    
     // Private helper methods
     private void validateAuctionItemForCreation(AuctionItem auctionItem) {
         if (auctionItem.getTitle() == null || auctionItem.getTitle().trim().isEmpty()) {
