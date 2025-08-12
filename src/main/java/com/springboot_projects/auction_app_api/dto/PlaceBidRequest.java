@@ -1,22 +1,31 @@
 package com.springboot_projects.auction_app_api.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public class PlaceBidRequest {
-    private BigDecimal amount;
+    
+    @NotBlank(message = "Bidder ID is required")
     private String bidderId;
-    private String notes;
+    
+    @NotNull(message = "Bid amount is required")
+    @DecimalMin(value = "0.01", message = "Bid amount must be greater than 0")
+    private BigDecimal amount;
     
     // Constructors
     public PlaceBidRequest() {}
     
-    // Getters and Setters
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public PlaceBidRequest(String bidderId, BigDecimal amount) {
+        this.bidderId = bidderId;
+        this.amount = amount;
+    }
     
+    // Getters and Setters
     public String getBidderId() { return bidderId; }
     public void setBidderId(String bidderId) { this.bidderId = bidderId; }
     
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 }
