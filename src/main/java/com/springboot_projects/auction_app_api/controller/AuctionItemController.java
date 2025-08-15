@@ -1,6 +1,8 @@
 package com.springboot_projects.auction_app_api.controller;
 
 import com.springboot_projects.auction_app_api.dto.*;
+import com.springboot_projects.auction_app_api.exception.AuctionNotFoundException;
+import com.springboot_projects.auction_app_api.exception.UserNotFoundException;
 import com.springboot_projects.auction_app_api.model.AuctionItem;
 import com.springboot_projects.auction_app_api.model.User;
 import com.springboot_projects.auction_app_api.service.AuctionItemService;
@@ -14,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import jakarta.validation.Valid;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,51 +37,39 @@ public class AuctionItemController {
     
     // Create new auction
     @PostMapping
-    public ResponseEntity<ApiResponse<AuctionItemDto>> createAuction(@RequestBody CreateAuctionRequest request) {
-        try {
-            Optional<User> seller = userService.getUserById(request.getSellerId());
-            if (!seller.isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ApiResponse.error("Seller not found"));
-            }
-            
-            AuctionItem auctionItem = new AuctionItem();
-            auctionItem.setTitle(request.getTitle());
-            auctionItem.setDescription(request.getDescription());
-            auctionItem.setCategory(request.getCategory());
-            auctionItem.setImageUrls(request.getImageUrls());
-            auctionItem.setStartingPrice(request.getStartingPrice());
-            auctionItem.setReservePrice(request.getReservePrice());
-            auctionItem.setStartDate(request.getStartDate());
-            auctionItem.setEndDate(request.getEndDate());
-            auctionItem.setSeller(seller.get());
-            
-            AuctionItem createdAuction = auctionItemService.createAuctionItem(auctionItem);
-            AuctionItemDto auctionDto = new AuctionItemDto(createdAuction);
-            
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Auction created successfully", auctionDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
+    public ResponseEntity<ApiResponse<AuctionItemDto>> createAuction(@Valid @RequestBody CreateAuctionRequest request) {
+        Optional<User> seller = userService.getUserById(request.getSellerId());
+        if (!seller.isPresent()) {
+            throw new UserNotFoundException("Seller not found with ID: " + request.getSellerId());
         }
+        
+        AuctionItem auctionItem = new AuctionItem();
+        auctionItem.setTitle(request.getTitle());
+        auctionItem.setDescription(request.getDescription());
+        auctionItem.setCategory(request.getCategory());
+        auctionItem.setImageUrls(request.getImageUrls());
+        auctionItem.setStartingPrice(request.getStartingPrice());
+        auctionItem.setReservePrice(request.getReservePrice());
+        auctionItem.setStartDate(request.getStartDate());
+        auctionItem.setEndDate(request.getEndDate());
+        auctionItem.setSeller(seller.get());
+        
+        AuctionItem createdAuction = auctionItemService.createAuctionItem(auctionItem);
+        AuctionItemDto auctionDto = new AuctionItemDto(createdAuction);
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Auction created successfully", auctionDto));
     }
     
     // Get auction by ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<AuctionItemDto>> getAuctionById(@PathVariable String id) {
-        try {
-            Optional<AuctionItem> auction = auctionItemService.getAuctionItemById(id);
-            if (auction.isPresent()) {
-                AuctionItemDto auctionDto = new AuctionItemDto(auction.get());
-                return ResponseEntity.ok(ApiResponse.success(auctionDto));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Auction not found"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
+        Optional<AuctionItem> auction = auctionItemService.getAuctionItemById(id);
+        if (auction.isPresent()) {
+            AuctionItemDto auctionDto = new AuctionItemDto(auction.get());
+            return ResponseEntity.ok(ApiResponse.success(auctionDto));
+        } else {
+            throw new AuctionNotFoundException("Auction not found with ID: " + id);
         }
     }
     
@@ -85,25 +77,20 @@ public class AuctionItemController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> updateAuction(@PathVariable String id, 
-                                                                    @RequestBody UpdateAuctionRequest request) {
-        try {
-            AuctionItem updateData = new AuctionItem();
-            updateData.setTitle(request.getTitle());
-            updateData.setDescription(request.getDescription());
-            updateData.setCategory(request.getCategory());
-            updateData.setImageUrls(request.getImageUrls());
-            updateData.setReservePrice(request.getReservePrice());
-            updateData.setStartDate(request.getStartDate());
-            updateData.setEndDate(request.getEndDate());
-            
-            AuctionItem updatedAuction = auctionItemService.updateAuctionItem(id, updateData);
-            AuctionItemDto auctionDto = new AuctionItemDto(updatedAuction);
-            
-            return ResponseEntity.ok(ApiResponse.success("Auction updated successfully", auctionDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+                                                                    @Valid @RequestBody UpdateAuctionRequest request) {
+        AuctionItem updateData = new AuctionItem();
+        updateData.setTitle(request.getTitle());
+        updateData.setDescription(request.getDescription());
+        updateData.setCategory(request.getCategory());
+        updateData.setImageUrls(request.getImageUrls());
+        updateData.setReservePrice(request.getReservePrice());
+        updateData.setStartDate(request.getStartDate());
+        updateData.setEndDate(request.getEndDate());
+        
+        AuctionItem updatedAuction = auctionItemService.updateAuctionItem(id, updateData);
+        AuctionItemDto auctionDto = new AuctionItemDto(updatedAuction);
+        
+        return ResponseEntity.ok(ApiResponse.success("Auction updated successfully", auctionDto));
     }
     
     // Get all auctions with pagination
@@ -113,19 +100,14 @@ public class AuctionItemController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        try {
-            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                    Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-            Pageable pageable = PageRequest.of(page, size, sort);
-            
-            Page<AuctionItem> auctions = auctionItemService.getAllAuctions(pageable);
-            Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<AuctionItem> auctions = auctionItemService.getAllAuctions(pageable);
+        Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Get active auctions
@@ -133,32 +115,22 @@ public class AuctionItemController {
     public ResponseEntity<ApiResponse<Page<AuctionItemDto>>> getActiveAuctions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("endDate").ascending());
-            Page<AuctionItem> auctions = auctionItemService.getActiveAuctions(pageable);
-            Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by("endDate").ascending());
+        Page<AuctionItem> auctions = auctionItemService.getActiveAuctions(pageable);
+        Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Get auctions ending soon
     @GetMapping("/ending-soon")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> getAuctionsEndingSoon() {
-        try {
-            List<AuctionItem> auctions = auctionItemService.getAuctionsEndingSoon();
-            List<AuctionItemDto> auctionDtos = auctions.stream()
-                    .map(AuctionItemDto::new)
-                    .collect(Collectors.toList());
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        List<AuctionItem> auctions = auctionItemService.getAuctionsEndingSoon();
+        List<AuctionItemDto> auctionDtos = auctions.stream()
+                .map(AuctionItemDto::new)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Get auctions by seller
@@ -167,22 +139,16 @@ public class AuctionItemController {
             @PathVariable String sellerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        try {
-            Optional<User> seller = userService.getUserById(sellerId);
-            if (!seller.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Seller not found"));
-            }
-            
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-            Page<AuctionItem> auctions = auctionItemService.getAuctionsBySeller(seller.get(), pageable);
-            Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
+        Optional<User> seller = userService.getUserById(sellerId);
+        if (!seller.isPresent()) {
+            throw new UserNotFoundException("Seller not found with ID: " + sellerId);
         }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<AuctionItem> auctions = auctionItemService.getAuctionsBySeller(seller.get(), pageable);
+        Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Get auctions by category

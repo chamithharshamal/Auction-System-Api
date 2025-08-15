@@ -30,27 +30,27 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/bids")
 @CrossOrigin(origins = "*")
 public class BidController {
-    
+
     @Autowired
     private BidService bidService;
-    
+
     @Autowired
     private AuctionItemService auctionItemService;
-    
+
     @Autowired
     private UserService userService;
-    
+
     // Place a bid
     @PostMapping("/auction/{auctionId}")
-    public ResponseEntity<ApiResponse<BidDto>> placeBid(@PathVariable String auctionId, 
-                                                       @Valid @RequestBody PlaceBidRequest request) {
+    public ResponseEntity<ApiResponse<BidDto>> placeBid(@PathVariable String auctionId,
+            @Valid @RequestBody PlaceBidRequest request) {
         Bid bid = bidService.placeBid(auctionId, request.getBidderId(), request.getAmount());
         BidDto bidDto = new BidDto(bid);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Bid placed successfully", bidDto));
     }
-    
+
     // Get bid by ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<BidDto>> getBidById(@PathVariable String id) {
@@ -62,7 +62,7 @@ public class BidController {
             throw new BidNotFoundException("Bid not found with ID: " + id);
         }
     }
-    
+
     // Get all bids with pagination
     @GetMapping
     public ResponseEntity<ApiResponse<Page<BidDto>>> getAllBids(
@@ -70,16 +70,15 @@ public class BidController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "timestamp") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<Bid> bids = bidService.getAllBids(pageable);
         Page<BidDto> bidDtos = bids.map(BidDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get bids for auction
     @GetMapping("/auction/{auctionId}")
     public ResponseEntity<ApiResponse<Page<BidDto>>> getBidsForAuction(
@@ -90,14 +89,14 @@ public class BidController {
         if (!auction.isPresent()) {
             throw new AuctionNotFoundException("Auction not found with ID: " + auctionId);
         }
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
         Page<Bid> bids = bidService.getBidsForAuction(auction.get(), pageable);
         Page<BidDto> bidDtos = bids.map(BidDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get recent bids for auction
     @GetMapping("/auction/{auctionId}/recent")
     public ResponseEntity<ApiResponse<List<BidDto>>> getRecentBidsForAuction(
@@ -107,10 +106,10 @@ public class BidController {
         List<BidDto> bidDtos = bids.stream()
                 .map(BidDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get highest bid for auction
     @GetMapping("/auction/{auctionId}/highest")
     public ResponseEntity<ApiResponse<BidDto>> getHighestBidForAuction(@PathVariable String auctionId) {
@@ -118,7 +117,7 @@ public class BidController {
         if (!auction.isPresent()) {
             throw new AuctionNotFoundException("Auction not found with ID: " + auctionId);
         }
-        
+
         Optional<Bid> highestBid = bidService.getHighestBidForAuction(auction.get());
         if (highestBid.isPresent()) {
             BidDto bidDto = new BidDto(highestBid.get());
@@ -127,7 +126,7 @@ public class BidController {
             throw new BidNotFoundException("No bids found for auction: " + auctionId);
         }
     }
-    
+
     // Get bids by bidder
     @GetMapping("/bidder/{bidderId}")
     public ResponseEntity<ApiResponse<Page<BidDto>>> getBidsByBidder(
@@ -138,14 +137,14 @@ public class BidController {
         if (!bidder.isPresent()) {
             throw new UserNotFoundException("User not found with ID: " + bidderId);
         }
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
         Page<Bid> bids = bidService.getBidsByBidder(bidder.get(), pageable);
         Page<BidDto> bidDtos = bids.map(BidDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get recent bids by bidder
     @GetMapping("/bidder/{bidderId}/recent")
     public ResponseEntity<ApiResponse<List<BidDto>>> getRecentBidsByBidder(
@@ -155,10 +154,10 @@ public class BidController {
         List<BidDto> bidDtos = bids.stream()
                 .map(BidDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get winning bids for user
     @GetMapping("/bidder/{bidderId}/winning")
     public ResponseEntity<ApiResponse<List<BidDto>>> getWinningBidsForUser(@PathVariable String bidderId) {
@@ -166,10 +165,10 @@ public class BidController {
         List<BidDto> bidDtos = bids.stream()
                 .map(BidDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get bids by status
     @GetMapping("/status/{status}")
     public ResponseEntity<ApiResponse<List<BidDto>>> getBidsByStatus(@PathVariable Bid.BidStatus status) {
@@ -177,10 +176,10 @@ public class BidController {
         List<BidDto> bidDtos = bids.stream()
                 .map(BidDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get bids in date range
     @GetMapping("/date-range")
     public ResponseEntity<ApiResponse<List<BidDto>>> getBidsInDateRange(
@@ -188,15 +187,15 @@ public class BidController {
             @RequestParam String endDate) {
         LocalDateTime start = LocalDateTime.parse(startDate);
         LocalDateTime end = LocalDateTime.parse(endDate);
-        
+
         List<Bid> bids = bidService.getBidsInDateRange(start, end);
         List<BidDto> bidDtos = bids.stream()
                 .map(BidDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Get bids in amount range
     @GetMapping("/amount-range")
     public ResponseEntity<ApiResponse<List<BidDto>>> getBidsInAmountRange(
@@ -206,19 +205,19 @@ public class BidController {
         List<BidDto> bidDtos = bids.stream()
                 .map(BidDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
-    
+
     // Cancel bid
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<BidDto>> cancelBid(@PathVariable String id) {
         Bid cancelledBid = bidService.cancelBid(id);
         BidDto bidDto = new BidDto(cancelledBid);
-        
+
         return ResponseEntity.ok(ApiResponse.success("Bid cancelled successfully", bidDto));
     }
-    
+
     // Check if user has bid on auction
     @GetMapping("/check/{bidderId}/auction/{auctionId}")
     public ResponseEntity<ApiResponse<Boolean>> hasUserBidOnAuction(
@@ -227,7 +226,7 @@ public class BidController {
         boolean hasBid = bidService.hasUserBidOnAuction(bidderId, auctionId);
         return ResponseEntity.ok(ApiResponse.success("Bid check completed", hasBid));
     }
-    
+
     // Get bid count for auction
     @GetMapping("/count/auction/{auctionId}")
     public ResponseEntity<ApiResponse<Long>> getBidCountForAuction(@PathVariable String auctionId) {
@@ -235,11 +234,11 @@ public class BidController {
         if (!auction.isPresent()) {
             throw new AuctionNotFoundException("Auction not found with ID: " + auctionId);
         }
-        
+
         long count = bidService.getBidCountForAuction(auction.get());
         return ResponseEntity.ok(ApiResponse.success("Bid count for auction", count));
     }
-    
+
     // Get bid count for user
     @GetMapping("/count/bidder/{bidderId}")
     public ResponseEntity<ApiResponse<Long>> getBidCountForUser(@PathVariable String bidderId) {
@@ -247,11 +246,11 @@ public class BidController {
         if (!bidder.isPresent()) {
             throw new UserNotFoundException("User not found with ID: " + bidderId);
         }
-        
+
         long count = bidService.getBidCountForUser(bidder.get());
         return ResponseEntity.ok(ApiResponse.success("Bid count for user", count));
     }
-    
+
     // Get all active bids
     @GetMapping("/active")
     public ResponseEntity<ApiResponse<List<BidDto>>> getActiveBids() {
@@ -259,7 +258,7 @@ public class BidController {
         List<BidDto> bidDtos = bids.stream()
                 .map(BidDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
 }
