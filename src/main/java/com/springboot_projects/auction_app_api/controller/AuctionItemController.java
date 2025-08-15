@@ -157,32 +157,22 @@ public class AuctionItemController {
             @PathVariable String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-            Page<AuctionItem> auctions = auctionItemService.getAuctionsByCategory(category, pageable);
-            Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<AuctionItem> auctions = auctionItemService.getAuctionsByCategory(category, pageable);
+        Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Search auctions
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> searchAuctions(@RequestParam String query) {
-        try {
-            List<AuctionItem> auctions = auctionItemService.searchAuctions(query);
-            List<AuctionItemDto> auctionDtos = auctions.stream()
-                    .map(AuctionItemDto::new)
-                    .collect(Collectors.toList());
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        List<AuctionItem> auctions = auctionItemService.searchAuctions(query);
+        List<AuctionItemDto> auctionDtos = auctions.stream()
+                .map(AuctionItemDto::new)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Get auctions by price range
@@ -192,137 +182,91 @@ public class AuctionItemController {
             @RequestParam BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("currentPrice").ascending());
-            Page<AuctionItem> auctions = auctionItemService.getAuctionsByPriceRange(minPrice, maxPrice, pageable);
-            Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by("currentPrice").ascending());
+        Page<AuctionItem> auctions = auctionItemService.getAuctionsByPriceRange(minPrice, maxPrice, pageable);
+        Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Get top auctions by price
     @GetMapping("/top-by-price")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> getTopAuctionsByPrice(
             @RequestParam(defaultValue = "10") int limit) {
-        try {
-            List<AuctionItem> auctions = auctionItemService.getTopAuctionsByPrice(limit);
-            List<AuctionItemDto> auctionDtos = auctions.stream()
-                    .map(AuctionItemDto::new)
-                    .collect(Collectors.toList());
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        List<AuctionItem> auctions = auctionItemService.getTopAuctionsByPrice(limit);
+        List<AuctionItemDto> auctionDtos = auctions.stream()
+                .map(AuctionItemDto::new)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Get recently created auctions
     @GetMapping("/recent")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> getRecentAuctions(
             @RequestParam(defaultValue = "10") int limit) {
-        try {
-            List<AuctionItem> auctions = auctionItemService.getRecentlyCreatedAuctions(limit);
-            List<AuctionItemDto> auctionDtos = auctions.stream()
-                    .map(AuctionItemDto::new)
-                    .collect(Collectors.toList());
-            
-            return ResponseEntity.ok(ApiResponse.success(auctionDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        List<AuctionItem> auctions = auctionItemService.getRecentlyCreatedAuctions(limit);
+        List<AuctionItemDto> auctionDtos = auctions.stream()
+                .map(AuctionItemDto::new)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
     
     // Start auction
     @PatchMapping("/{id}/start")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> startAuction(@PathVariable String id) {
-        try {
-            AuctionItem auction = auctionItemService.startAuction(id);
-            AuctionItemDto auctionDto = new AuctionItemDto(auction);
-            
-            return ResponseEntity.ok(ApiResponse.success("Auction started successfully", auctionDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        AuctionItem auction = auctionItemService.startAuction(id);
+        AuctionItemDto auctionDto = new AuctionItemDto(auction);
+        
+        return ResponseEntity.ok(ApiResponse.success("Auction started successfully", auctionDto));
     }
     
     // End auction
     @PatchMapping("/{id}/end")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> endAuction(@PathVariable String id) {
-        try {
-            AuctionItem auction = auctionItemService.endAuction(id);
-            AuctionItemDto auctionDto = new AuctionItemDto(auction);
-            
-            return ResponseEntity.ok(ApiResponse.success("Auction ended successfully", auctionDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        AuctionItem auction = auctionItemService.endAuction(id);
+        AuctionItemDto auctionDto = new AuctionItemDto(auction);
+        
+        return ResponseEntity.ok(ApiResponse.success("Auction ended successfully", auctionDto));
     }
     
     // Cancel auction
     @PatchMapping("/{id}/cancel")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> cancelAuction(@PathVariable String id) {
-        try {
-            AuctionItem auction = auctionItemService.cancelAuction(id);
-            AuctionItemDto auctionDto = new AuctionItemDto(auction);
-            
-            return ResponseEntity.ok(ApiResponse.success("Auction cancelled successfully", auctionDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        AuctionItem auction = auctionItemService.cancelAuction(id);
+        AuctionItemDto auctionDto = new AuctionItemDto(auction);
+        
+        return ResponseEntity.ok(ApiResponse.success("Auction cancelled successfully", auctionDto));
     }
     
     // Delete auction
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<Void>> deleteAuction(@PathVariable String id) {
-        try {
-            auctionItemService.deleteAuctionItem(id);
-            return ResponseEntity.ok(ApiResponse.success("Auction deleted successfully", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        auctionItemService.deleteAuctionItem(id);
+        return ResponseEntity.ok(ApiResponse.success("Auction deleted successfully", null));
     }
     
     // Get auction statistics
     @GetMapping("/stats/seller/{sellerId}")
     public ResponseEntity<ApiResponse<Long>> getSellerAuctionCount(@PathVariable String sellerId) {
-        try {
-            Optional<User> seller = userService.getUserById(sellerId);
-            if (!seller.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Seller not found"));
-            }
-            
-            long count = auctionItemService.getAuctionCountBySeller(seller.get());
-            return ResponseEntity.ok(ApiResponse.success("Seller auction count", count));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
+        Optional<User> seller = userService.getUserById(sellerId);
+        if (!seller.isPresent()) {
+            throw new UserNotFoundException("Seller not found with ID: " + sellerId);
         }
+        
+        long count = auctionItemService.getAuctionCountBySeller(seller.get());
+        return ResponseEntity.ok(ApiResponse.success("Seller auction count", count));
     }
     
     // Get total active auctions count
     @GetMapping("/stats/active-count")
     public ResponseEntity<ApiResponse<Long>> getActiveAuctionsCount() {
-        try {
-            long count = auctionItemService.getActiveAuctionsCount();
-            return ResponseEntity.ok(ApiResponse.success("Active auctions count", count));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        long count = auctionItemService.getActiveAuctionsCount();
+        return ResponseEntity.ok(ApiResponse.success("Active auctions count", count));
     }
 }
