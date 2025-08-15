@@ -1,0 +1,25 @@
+spring:
+  data:
+    mongodb:
+      database: test_auction_db
+  
+  security:
+    jwt:
+      secret: test-secret-key-for-testing-purposes-only-should-be-longer-than-256-bits
+      expiration: 3600000 # 1 hour for testing
+
+logging:
+  level:
+    com.springboot_projects.auction_app_api: DEBUG
+    org.springframework.security: DEBUG
+    org.testcontainers: INFO
+  
+server:
+  port: 0 # Random port for testing
+
+# Disable security for some tests if needed
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

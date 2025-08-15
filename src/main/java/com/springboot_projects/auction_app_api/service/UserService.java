@@ -1,5 +1,7 @@
 package com.springboot_projects.auction_app_api.service;
 
+import com.springboot_projects.auction_app_api.exception.UnauthorizedException;
+import com.springboot_projects.auction_app_api.exception.UserNotFoundException;
 import com.springboot_projects.auction_app_api.model.User;
 import com.springboot_projects.auction_app_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class UserService {
@@ -60,7 +61,7 @@ public class UserService {
             user.setUpdatedAt(LocalDateTime.now());
             return userRepository.save(user);
         }
-        throw new RuntimeException("User not found with id: " + id);
+        throw new UserNotFoundException("User not found with id: " + id);
     }
     
     // Update user password
@@ -72,8 +73,28 @@ public class UserService {
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
         } else {
-            throw new RuntimeException("User not found with id: " + userId);
+            throw new UserNotFoundException("User not found with id: " + userId);
         }
+    }
+    
+    // Change user password (with current password validation)
+    public void changePassword(String userId, String currentPassword, String newPassword) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (!userOpt.isPresent()) {
+            throw new UserNotFoundException("User not found with id: " + userId);
+        }
+        
+        User user = userOpt.get();
+        
+        // Validate current password
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new UnauthorizedException("Current password is incorrect");
+        }
+        
+        // Update to new password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
     }
     
     // Add role to user
@@ -85,7 +106,7 @@ public class UserService {
             user.setUpdatedAt(LocalDateTime.now());
             return userRepository.save(user);
         }
-        throw new RuntimeException("User not found with id: " + userId);
+        throw new UserNotFoundException("User not found with id: " + userId);
     }
     
     // Remove role from user
@@ -97,7 +118,7 @@ public class UserService {
             user.setUpdatedAt(LocalDateTime.now());
             return userRepository.save(user);
         }
-        throw new RuntimeException("User not found with id: " + userId);
+        throw new UserNotFoundException("User not found with id: " + userId);
     }
     
     // Activate/Deactivate user
@@ -109,7 +130,7 @@ public class UserService {
             user.setUpdatedAt(LocalDateTime.now());
             return userRepository.save(user);
         }
-        throw new RuntimeException("User not found with id: " + userId);
+        throw new UserNotFoundException("User not found with id: " + userId);
     }
     
     // Get all active users
@@ -147,7 +168,7 @@ public class UserService {
         if (userRepository.existsById(userId)) {
             userRepository.deleteById(userId);
         } else {
-            throw new RuntimeException("User not found with id: " + userId);
+            throw new UserNotFoundException("User not found with id: " + userId);
         }
     }
     
