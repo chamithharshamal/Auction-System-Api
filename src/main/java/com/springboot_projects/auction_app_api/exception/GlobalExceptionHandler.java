@@ -128,6 +128,22 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Unauthorized", errorResponse));
     }
     
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleInvalidFileException(
+            InvalidFileException ex, WebRequest request) {
+        logger.warn("Invalid file upload: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+            "INVALID_FILE",
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST.value(),
+            request.getDescription(false).replace("uri=", "")
+        );
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Invalid file", errorResponse));
+    }
+    
     // Authentication and Authorization Exceptions
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleAuthenticationException(
