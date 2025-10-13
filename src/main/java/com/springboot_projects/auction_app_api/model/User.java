@@ -29,7 +29,7 @@ public class User {
     private LocalDateTime updatedAt;
     
     public enum Role {
-        SELLER, BIDDER
+        ADMIN, SELLER, BIDDER
     }
     
     // Constructors

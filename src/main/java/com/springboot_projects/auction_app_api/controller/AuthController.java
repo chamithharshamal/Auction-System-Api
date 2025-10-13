@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -41,7 +42,12 @@ public class AuthController {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setRoles(request.getRoles());
+        // Set default role if none provided
+        if (request.getRoles() == null || request.getRoles().isEmpty()) {
+            user.setRoles(Set.of(User.Role.BIDDER));
+        } else {
+            user.setRoles(request.getRoles());
+        }
         
         User createdUser = userService.createUser(user);
         UserDto userDto = new UserDto(createdUser);

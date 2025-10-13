@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -38,8 +41,22 @@ public class SecurityConfig {
     }
     
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+    
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
@@ -62,6 +79,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auctions/price-range").permitAll()
                 .requestMatchers("/api/auctions/top-by-price").permitAll()
                 .requestMatchers("/api/auctions/recent").permitAll()
+                .requestMatchers("/api/auctions/ending-soon").permitAll()
                 .requestMatchers("/api/auctions/{id}").permitAll() // View specific auction
                 
                 // Auction management - Seller only
@@ -76,7 +94,9 @@ public class SecurityConfig {
                 .requestMatchers("POST", "/api/bids/**").hasRole("BIDDER")
                 .requestMatchers("PATCH", "/api/bids/**/cancel").hasRole("BIDDER")
                 
-                // Bid viewing - Authenticated users
+                // Bid viewing - Public access for viewing bids
+                .requestMatchers("GET", "/api/bids/auction/**/recent").permitAll()
+                .requestMatchers("GET", "/api/bids/auction/**/highest").permitAll()
                 .requestMatchers("GET", "/api/bids/**").authenticated()
                 
                 // All other requests require authentication

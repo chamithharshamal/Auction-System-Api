@@ -1,0 +1,206 @@
+[
+  {
+    "title": "Vintage Rolex Submariner 16610",
+    "description": "Classic Rolex Submariner from 2000, excellent condition with original box and papers. Serviced in 2023. Perfect for collectors or daily wear.",
+    "category": "Watches",
+    "startingPrice": 8500.00,
+    "currentPrice": 8500.00,
+    "reservePrice": 12000.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1523170335258-f5b6d6a8f7b3?w=500",
+      "https://images.unsplash.com/photo-1523170335258-f5b6d6a8f7b3?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T10:00:00Z",
+    "endTime": "2024-09-21T18:00:00Z",
+    "createdAt": "2024-09-14T09:30:00Z",
+    "updatedAt": "2024-09-14T09:30:00Z"
+  },
+  {
+    "title": "MacBook Pro 16-inch M3 Max",
+    "description": "Brand new MacBook Pro 16-inch with M3 Max chip, 32GB RAM, 1TB SSD. Still sealed in original packaging. Perfect for professionals and creators.",
+    "category": "Electronics",
+    "startingPrice": 3200.00,
+    "currentPrice": 3200.00,
+    "reservePrice": 4000.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500",
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T11:00:00Z",
+    "endTime": "2024-09-18T20:00:00Z",
+    "createdAt": "2024-09-14T10:30:00Z",
+    "updatedAt": "2024-09-14T10:30:00Z"
+  },
+  {
+    "title": "Antique Persian Rug - 8x10",
+    "description": "Beautiful hand-woven Persian rug from the 1950s. Excellent condition with vibrant colors. Perfect centerpiece for any living room.",
+    "category": "Home & Garden",
+    "startingPrice": 1200.00,
+    "currentPrice": 1200.00,
+    "reservePrice": 2000.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500",
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T12:00:00Z",
+    "endTime": "2024-09-20T15:00:00Z",
+    "createdAt": "2024-09-14T11:30:00Z",
+    "updatedAt": "2024-09-14T11:30:00Z"
+  },
+  {
+    "title": "Vincent van Gogh Print - Starry Night",
+    "description": "High-quality museum reproduction of Van Gogh's Starry Night. Framed and ready to hang. Perfect for art lovers and collectors.",
+    "category": "Art & Collectibles",
+    "startingPrice": 150.00,
+    "currentPrice": 150.00,
+    "reservePrice": 300.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=500",
+      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T13:00:00Z",
+    "endTime": "2024-09-17T12:00:00Z",
+    "createdAt": "2024-09-14T12:30:00Z",
+    "updatedAt": "2024-09-14T12:30:00Z"
+  },
+  {
+    "title": "Diamond Engagement Ring - 2ct",
+    "description": "Stunning 2-carat diamond engagement ring with platinum setting. GIA certified. Perfect for that special proposal moment.",
+    "category": "Jewelry",
+    "startingPrice": 15000.00,
+    "currentPrice": 15000.00,
+    "reservePrice": 25000.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500",
+      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T14:00:00Z",
+    "endTime": "2024-09-22T16:00:00Z",
+    "createdAt": "2024-09-14T13:30:00Z",
+    "updatedAt": "2024-09-14T13:30:00Z"
+  },
+  {
+    "title": "Vintage Gibson Les Paul Guitar",
+    "description": "1970s Gibson Les Paul in cherry sunburst. Excellent condition with original case. A true collector's item for guitar enthusiasts.",
+    "category": "Musical Instruments",
+    "startingPrice": 4500.00,
+    "currentPrice": 4500.00,
+    "reservePrice": 6500.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?w=500",
+      "https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T15:00:00Z",
+    "endTime": "2024-09-19T18:00:00Z",
+    "createdAt": "2024-09-14T14:30:00Z",
+    "updatedAt": "2024-09-14T14:30:00Z"
+  },
+  {
+    "title": "Limited Edition Nike Air Jordan 1",
+    "description": "Rare Air Jordan 1 'Chicago' from 1985. Size 10.5. Deadstock condition with original box. Highly sought after by sneaker collectors.",
+    "category": "Fashion & Accessories",
+    "startingPrice": 800.00,
+    "currentPrice": 800.00,
+    "reservePrice": 1500.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500",
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T16:00:00Z",
+    "endTime": "2024-09-16T20:00:00Z",
+    "createdAt": "2024-09-14T15:30:00Z",
+    "updatedAt": "2024-09-14T15:30:00Z"
+  },
+  {
+    "title": "Vintage Wine Collection - Bordeaux 1982",
+    "description": "Collection of 12 bottles of 1982 Bordeaux wines from top châteaux. Stored in perfect conditions. Perfect for wine connoisseurs.",
+    "category": "Food & Beverages",
+    "startingPrice": 2500.00,
+    "currentPrice": 2500.00,
+    "reservePrice": 4000.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=500",
+      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T17:00:00Z",
+    "endTime": "2024-09-21T19:00:00Z",
+    "createdAt": "2024-09-14T16:30:00Z",
+    "updatedAt": "2024-09-14T16:30:00Z"
+  },
+  {
+    "title": "Professional Camera Kit - Canon EOS R5",
+    "description": "Complete professional photography kit including Canon EOS R5 body, 24-70mm f/2.8 lens, 70-200mm f/2.8 lens, and accessories.",
+    "category": "Electronics",
+    "startingPrice": 5500.00,
+    "currentPrice": 5500.00,
+    "reservePrice": 7500.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=500",
+      "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T18:00:00Z",
+    "endTime": "2024-09-20T17:00:00Z",
+    "createdAt": "2024-09-14T17:30:00Z",
+    "updatedAt": "2024-09-14T17:30:00Z"
+  },
+  {
+    "title": "Antique Wooden Chess Set",
+    "description": "Hand-carved wooden chess set from the 1800s. Beautiful craftsmanship with intricate details. Perfect for collectors and chess enthusiasts.",
+    "category": "Art & Collectibles",
+    "startingPrice": 300.00,
+    "currentPrice": 300.00,
+    "reservePrice": 600.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=500",
+      "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T19:00:00Z",
+    "endTime": "2024-09-18T14:00:00Z",
+    "createdAt": "2024-09-14T18:30:00Z",
+    "updatedAt": "2024-09-14T18:30:00Z"
+  },
+  {
+    "title": "Luxury Handbag - Hermès Birkin",
+    "description": "Authentic Hermès Birkin bag in black leather. Size 35cm. Excellent condition with original dust bag and box. A true luxury item.",
+    "category": "Fashion & Accessories",
+    "startingPrice": 12000.00,
+    "currentPrice": 12000.00,
+    "reservePrice": 20000.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T20:00:00Z",
+    "endTime": "2024-09-23T15:00:00Z",
+    "createdAt": "2024-09-14T19:30:00Z",
+    "updatedAt": "2024-09-14T19:30:00Z"
+  },
+  {
+    "title": "Vintage Motorcycle - Honda CB750",
+    "description": "1975 Honda CB750 in excellent running condition. Recently restored with new tires and battery. Perfect for motorcycle enthusiasts.",
+    "category": "Vehicles",
+    "startingPrice": 3500.00,
+    "currentPrice": 3500.00,
+    "reservePrice": 5500.00,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500"
+    ],
+    "status": "ACTIVE",
+    "startTime": "2024-09-14T21:00:00Z",
+    "endTime": "2024-09-22T12:00:00Z",
+    "createdAt": "2024-09-14T20:30:00Z",
+    "updatedAt": "2024-09-14T20:30:00Z"
+  }
+]

@@ -28,7 +28,7 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    @Autowired
+    @Autowired(required = false)
     private JavaMailSender mailSender;
 
     @Autowired
@@ -198,6 +198,11 @@ public class EmailService {
     private void sendHtmlEmail(String to, String subject, String template, Map<String, Object> variables)
             throws MessagingException {
 
+        if (mailSender == null) {
+            logger.warn("JavaMailSender is not available, skipping email: {} to {}", subject, to);
+            return;
+        }
+
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -226,7 +231,7 @@ public class EmailService {
 
     @Async
     public void sendSimpleEmail(String to, String subject, String text) {
-        if (!emailConfig.isEnabled())
+        if (!emailConfig.isEnabled() || mailSender == null)
             return;
 
         try {
