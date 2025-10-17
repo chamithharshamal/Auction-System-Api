@@ -210,6 +210,9 @@ const ModernHomePage: React.FC = () => {
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     displayEmpty
+                    MenuProps={{
+                      disableScrollLock: true, // This prevents the scrollbar issue
+                    }}
                     sx={{ 
                       color: '#00796b', 
                       fontWeight: 600,

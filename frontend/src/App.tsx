@@ -9,7 +9,7 @@ import modernTheme from './theme/modernTheme';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ModernNavbar from './components/layout/ModernNavbar';
 import ModernHomePage from './pages/ModernHomePage';
-import ModernLoginPage from './pages/auth/ModernLoginPage';
+import LoginPage from './pages/auth/LoginPage';  // Changed from ModernLoginPage
 import ModernRegisterPage from './pages/auth/ModernRegisterPage';
 import ModernAuctionListPage from './pages/auctions/ModernAuctionListPage';
 import ModernAuctionDetailPage from './pages/auctions/ModernAuctionDetailPage';
@@ -58,7 +58,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/" element={<ModernHomePage />} />
           <Route 
             path="/login" 
-            element={isAuthenticated ? <Navigate to="/" replace /> : <ModernLoginPage />} 
+            element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}  // Changed from ModernLoginPage
           />
           <Route 
             path="/register" 

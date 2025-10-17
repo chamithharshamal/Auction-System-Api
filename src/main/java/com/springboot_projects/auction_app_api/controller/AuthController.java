@@ -78,7 +78,8 @@ public class AuthController {
         String token = authHeader.substring(7);
         String username = authService.extractUsernameFromToken(token);
         
-        var user = userService.getUserByUsername(username);
+        // Use getUserByUsernameOrEmail to handle both username and email cases
+        var user = userService.getUserByUsernameOrEmail(username);
         if (user.isPresent()) {
             UserDto userDto = new UserDto(user.get());
             return ResponseEntity.ok(ApiResponse.success("Current user info", userDto));

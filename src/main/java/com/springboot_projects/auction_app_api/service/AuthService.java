@@ -33,7 +33,7 @@ public class AuthService {
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsernameOrEmail(),
+                            loginRequest.getUsername(),
                             loginRequest.getPassword()));
 
             // Get user details
@@ -60,7 +60,7 @@ public class AuthService {
                     user.getRoles());
 
         } catch (BadCredentialsException e) {
-            throw new UnauthorizedException("Invalid username/email or password");
+            throw new UnauthorizedException("Invalid username or password");
         } catch (AuthenticationException e) {
             throw new UnauthorizedException("Authentication failed: " + e.getMessage());
         }

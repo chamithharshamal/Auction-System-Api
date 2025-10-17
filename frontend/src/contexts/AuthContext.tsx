@@ -111,20 +111,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkAuth = async () => {
       if (authService.isAuthenticated()) {
         try {
-          const user = authService.getStoredUser();
-          if (user) {
-            // Validate token with server
-            const isValid = await authService.validateToken();
-            if (isValid) {
-              dispatch({
-                type: 'LOGIN_SUCCESS',
-                payload: { user, token: localStorage.getItem('token')! },
-              });
-            } else {
-              authService.logout();
-              dispatch({ type: 'LOGOUT' });
-            }
+          // Validate token with server
+          const isValid = await authService.validateToken();
+          if (isValid) {
+            // Get fresh user data from server
+            const user = await authService.getCurrentUser();
+            // Update stored user data
+            const token = localStorage.getItem('token')!;
+            authService.storeUser(user, token);
+            dispatch({
+              type: 'LOGIN_SUCCESS',
+              payload: { user, token },
+            });
           } else {
+            authService.logout();
             dispatch({ type: 'LOGOUT' });
           }
         } catch (error) {
@@ -143,6 +143,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       dispatch({ type: 'LOGIN_START' });
       const jwtResponse = await authService.login({ username, password });
+      
+      // Store the token immediately so the axios interceptor can use it
+      localStorage.setItem('token', jwtResponse.token);
+      
+      // Now get the current user with the token in the header
       const user = await authService.getCurrentUser();
       
       authService.storeUser(user, jwtResponse.token);
@@ -151,6 +156,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         payload: { user, token: jwtResponse.token },
       });
     } catch (error: any) {
+      // Clean up token if login fails
+      localStorage.removeItem('token');
       const errorMessage = error.response?.data?.message || 'Login failed';
       dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
       throw error;
@@ -168,6 +175,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }) => {
     try {
       dispatch({ type: 'LOGIN_START' });
+      
       const user = await authService.register(userData);
       
       // Auto-login after registration
@@ -176,12 +184,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password: userData.password,
       });
       
-      authService.storeUser(user, jwtResponse.token);
+      // Store the token immediately so the axios interceptor can use it
+      localStorage.setItem('token', jwtResponse.token);
+      
+      // Get updated user info with the token in the header
+      const updatedUser = await authService.getCurrentUser();
+      
+      authService.storeUser(updatedUser, jwtResponse.token);
       dispatch({
         type: 'LOGIN_SUCCESS',
-        payload: { user, token: jwtResponse.token },
+        payload: { user: updatedUser, token: jwtResponse.token },
       });
     } catch (error: any) {
+      // Clean up token if registration/login fails
+      localStorage.removeItem('token');
       const errorMessage = error.response?.data?.message || 'Registration failed';
       dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
       throw error;

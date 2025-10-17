@@ -23,7 +23,16 @@ export const authService = {
   // Validate token
   async validateToken(): Promise<boolean> {
     try {
-      const response = await api.post<ApiResponse<boolean>>('/auth/validate');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return false;
+      }
+      
+      const response = await api.post<ApiResponse<boolean>>('/auth/validate', {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       return response.data.data;
     } catch (error) {
       return false;
