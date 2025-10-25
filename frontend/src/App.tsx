@@ -14,6 +14,7 @@ import ModernRegisterPage from './pages/auth/ModernRegisterPage';
 import ModernAuctionListPage from './pages/auctions/ModernAuctionListPage';
 import ModernAuctionDetailPage from './pages/auctions/ModernAuctionDetailPage';
 import CreateAuctionPage from './pages/auctions/CreateAuctionPage';
+import EditAuctionPage from './pages/auctions/EditAuctionPage';
 import UserProfilePage from './pages/user/UserProfilePage';
 import MyAuctionsPage from './pages/user/MyAuctionsPage';
 import MyBidsPage from './pages/user/MyBidsPage';
@@ -97,6 +98,14 @@ const AppRoutes: React.FC = () => {
             element={
               <ProtectedRoute requiredRole="SELLER">
                 <CreateAuctionPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/edit-auction/:id" 
+            element={
+              <ProtectedRoute requiredRole="SELLER">
+                <EditAuctionPage />
               </ProtectedRoute>
             } 
           />

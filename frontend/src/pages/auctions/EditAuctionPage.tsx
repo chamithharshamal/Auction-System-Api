@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -15,37 +15,41 @@ import {
   CardActions,
   IconButton,
   Divider,
+  Alert,
 } from '@mui/material';
 import { Grid } from '@mui/material';
 import {
   Add,
   Delete,
   Gavel,
+  ArrowBack,
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import type { CreateAuctionRequest } from '../../types/api';
+import type { AuctionItem, UpdateAuctionRequest } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const CreateAuctionPage: React.FC = () => {
+const EditAuctionPage: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const [formData, setFormData] = useState<CreateAuctionRequest>({
+  const [auction, setAuction] = useState<AuctionItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState<UpdateAuctionRequest>({
     title: '',
     description: '',
     category: '',
-    imageUrls: [],
-    startingPrice: 0,
+    imageUrls: [''],
     reservePrice: 0,
     startDate: '',
     endDate: '',
-    sellerId: user?.id || '',
   });
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -62,11 +66,49 @@ const CreateAuctionPage: React.FC = () => {
     'Other',
   ];
 
+  useEffect(() => {
+    if (id) {
+      loadAuctionDetails();
+    }
+  }, [id]);
+
+  const loadAuctionDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const auctionData = await auctionService.getAuctionById(id!);
+      
+      // Check if user is the seller
+      if (auctionData.seller.id !== user?.id) {
+        setError('You are not authorized to edit this auction');
+        return;
+      }
+      
+      setAuction(auctionData);
+      
+      // Initialize form data with auction details
+      setFormData({
+        title: auctionData.title,
+        description: auctionData.description,
+        category: auctionData.category,
+        imageUrls: auctionData.imageUrls.length > 0 ? [...auctionData.imageUrls] : [''],
+        reservePrice: auctionData.reservePrice,
+        startDate: auctionData.startDate,
+        endDate: auctionData.endDate,
+      });
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to load auction details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'startingPrice' || name === 'reservePrice' 
+      [name]: name === 'reservePrice' 
         ? parseFloat(value) || 0 
         : value,
     }));
@@ -96,17 +138,19 @@ const CreateAuctionPage: React.FC = () => {
   };
 
   const handleImageUrlRemove = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
-    }));
+    if (formData.imageUrls.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
-      setError('You must be logged in to create an auction');
+    if (!user || !auction) {
+      setError('You must be logged in to edit an auction');
       return;
     }
 
@@ -116,12 +160,7 @@ const CreateAuctionPage: React.FC = () => {
       return;
     }
 
-    if (formData.startingPrice <= 0) {
-      setError('Starting price must be greater than 0');
-      return;
-    }
-
-    if (formData.reservePrice > 0 && formData.reservePrice < formData.startingPrice) {
+    if (formData.reservePrice > 0 && formData.reservePrice < auction.startingPrice) {
       setError('Reserve price must be greater than or equal to starting price');
       return;
     }
@@ -131,33 +170,44 @@ const CreateAuctionPage: React.FC = () => {
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     setError(null);
 
     try {
       const auctionData = {
         ...formData,
-        sellerId: user.id,
         imageUrls: formData.imageUrls.filter(url => url.trim() !== ''),
       };
 
-      await auctionService.createAuction(auctionData);
-      setSuccess('Auction created successfully!');
+      await auctionService.updateAuction(auction.id, auctionData);
+      setSuccess('Auction updated successfully!');
       setTimeout(() => {
-        navigate('/my-auctions');
+        navigate(`/auctions/${auction.id}`);
       }, 2000);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to create auction');
+      setError(error.response?.data?.message || 'Failed to update auction');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return <LoadingSpinner message="Loading auction details..." />;
+  }
+
+  if (!auction) {
+    return (
+      <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 3, md: 4 } }}>
+        <Alert severity="error">Auction not found</Alert>
+      </Container>
+    );
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 3, md: 4 } }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Create New Auction
+          Edit Auction
         </Typography>
 
         {error && (
@@ -236,18 +286,19 @@ const CreateAuctionPage: React.FC = () => {
                   Pricing
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Note: Starting price cannot be changed after auction creation. Only reserve price can be modified.
+                </Typography>
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <TextField
-                  required
+                  disabled
                   fullWidth
                   type="number"
                   label="Starting Price"
-                  name="startingPrice"
-                  value={formData.startingPrice}
-                  onChange={handleChange}
-                  inputProps={{ min: 0, step: 0.01 }}
+                  value={auction.startingPrice}
                   InputProps={{
                     startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
                   }}
@@ -334,6 +385,7 @@ const CreateAuctionPage: React.FC = () => {
                       <IconButton
                         color="error"
                         onClick={() => handleImageUrlRemove(index)}
+                        disabled={formData.imageUrls.length <= 1}
                       >
                         <Delete />
                       </IconButton>
@@ -356,8 +408,9 @@ const CreateAuctionPage: React.FC = () => {
                 <Box display="flex" gap={2} justifyContent="flex-end" sx={{ mt: 3 }}>
                   <Button
                     variant="outlined"
-                    onClick={() => navigate('/my-auctions')}
-                    disabled={loading}
+                    startIcon={<ArrowBack />}
+                    onClick={() => navigate(`/auctions/${auction.id}`)}
+                    disabled={saving}
                   >
                     Cancel
                   </Button>
@@ -365,10 +418,10 @@ const CreateAuctionPage: React.FC = () => {
                     type="submit"
                     variant="contained"
                     startIcon={<Gavel />}
-                    disabled={loading}
+                    disabled={saving}
                     sx={{ minWidth: 150 }}
                   >
-                    {loading ? 'Creating...' : 'Create Auction'}
+                    {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </Box>
               </Grid>
@@ -380,4 +433,4 @@ const CreateAuctionPage: React.FC = () => {
   );
 };
 
-export default CreateAuctionPage;
+export default EditAuctionPage;

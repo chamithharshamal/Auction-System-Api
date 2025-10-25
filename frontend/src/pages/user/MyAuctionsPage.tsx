@@ -171,7 +171,7 @@ const MyAuctionsPage: React.FC = () => {
                     startIcon={<Edit />}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Navigate to edit auction page
+                      navigate(`/edit-auction/${auction.id}`);
                     }}
                   >
                     Edit
