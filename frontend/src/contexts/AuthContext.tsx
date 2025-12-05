@@ -143,13 +143,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       dispatch({ type: 'LOGIN_START' });
       const jwtResponse = await authService.login({ username, password });
-      
+
       // Store the token immediately so the axios interceptor can use it
       localStorage.setItem('token', jwtResponse.token);
-      
+
       // Now get the current user with the token in the header
       const user = await authService.getCurrentUser();
-      
+
       authService.storeUser(user, jwtResponse.token);
       dispatch({
         type: 'LOGIN_SUCCESS',
@@ -175,21 +175,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }) => {
     try {
       dispatch({ type: 'LOGIN_START' });
-      
-      const user = await authService.register(userData);
-      
+
+      await authService.register(userData);
+
       // Auto-login after registration
       const jwtResponse = await authService.login({
         username: userData.username,
         password: userData.password,
       });
-      
+
       // Store the token immediately so the axios interceptor can use it
       localStorage.setItem('token', jwtResponse.token);
-      
+
       // Get updated user info with the token in the header
       const updatedUser = await authService.getCurrentUser();
-      
+
       authService.storeUser(updatedUser, jwtResponse.token);
       dispatch({
         type: 'LOGIN_SUCCESS',

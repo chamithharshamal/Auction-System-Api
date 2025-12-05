@@ -142,7 +142,7 @@ const HomePage: React.FC = () => {
       >
         <Container maxWidth={false} sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
           <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h2" component="h1" gutterBottom>
                 Discover Amazing
                 <Box component="span" sx={{ color: 'accent.main' }}>
@@ -152,7 +152,7 @@ const HomePage: React.FC = () => {
               <Typography variant="h5" sx={{ mb: 4, opacity: 0.9 }}>
                 Find unique items, place bids, and win the perfect auction for you.
               </Typography>
-              
+
               {/* Search Section */}
               <Paper
                 component="form"
@@ -192,7 +192,7 @@ const HomePage: React.FC = () => {
                 </IconButton>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box
                 sx={{
                   display: 'flex',
@@ -216,7 +216,7 @@ const HomePage: React.FC = () => {
           </Typography>
           <Grid container spacing={3}>
             {featuredAuctions.map((auction) => (
-              <Grid item xs={12} sm={6} md={4} key={auction.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={auction.id}>
                 <Card
                   sx={{
                     height: '100%',
@@ -289,7 +289,7 @@ const HomePage: React.FC = () => {
             </Typography>
             <Grid container spacing={3}>
               {endingSoonAuctions.slice(0, 4).map((auction) => (
-                <Grid item xs={12} sm={6} md={3} key={auction.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={auction.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -333,7 +333,7 @@ const HomePage: React.FC = () => {
             </Typography>
             <Grid container spacing={3}>
               {topAuctions.map((auction) => (
-                <Grid item xs={12} sm={6} md={3} key={auction.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={auction.id}>
                   <Card
                     sx={{
                       height: '100%',

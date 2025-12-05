@@ -17,12 +17,10 @@ import {
   IconButton,
   Divider,
   Grid,
-  FormHelperText,
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
-  PersonAdd,
   Person,
   Email,
   Phone,
@@ -71,7 +69,7 @@ const ModernRegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       return;
     }
@@ -107,9 +105,9 @@ const ModernRegisterPage: React.FC = () => {
   const passwordMatch = formData.password === formData.confirmPassword;
   const isUsernameValid = /^[a-zA-Z0-9_]{3,50}$/.test(formData.username);
   const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,100}$/.test(formData.password);
-  const isFormValid = formData.username && formData.email && formData.password && 
-                     formData.firstName && formData.lastName && passwordMatch && 
-                     isUsernameValid && isPasswordValid;
+  const isFormValid = formData.username && formData.email && formData.password &&
+    formData.firstName && formData.lastName && passwordMatch &&
+    isUsernameValid && isPasswordValid;
 
   return (
     <Box
@@ -169,7 +167,7 @@ const ModernRegisterPage: React.FC = () => {
                 mb: 3,
               }}
             >
-                  Create Your Account
+              Create Your Account
             </Typography>
             <Box
               sx={{
@@ -181,16 +179,16 @@ const ModernRegisterPage: React.FC = () => {
               }}
             >
               <Typography variant="caption" sx={{ fontWeight: 600, color: '#ff6b6b' }}>
-                <strong>Username:</strong> 3-50 chars, letters, numbers, underscores<br/>
+                <strong>Username:</strong> 3-50 chars, letters, numbers, underscores<br />
                 <strong>Password:</strong> 8+ chars with uppercase, lowercase, digit
               </Typography>
             </Box>
 
             {error && (
-              <Alert 
-                severity="error" 
-                sx={{ 
-                  width: '100%', 
+              <Alert
+                severity="error"
+                sx={{
+                  width: '100%',
                   mb: 2.5,
                   borderRadius: 1.5,
                   py: 1,
@@ -204,7 +202,7 @@ const ModernRegisterPage: React.FC = () => {
 
             <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
               <Grid container spacing={1.5}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     size="small"
                     autoComplete="given-name"
@@ -230,7 +228,7 @@ const ModernRegisterPage: React.FC = () => {
                     sx={{ fontSize: '0.875rem' }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     size="small"
                     required
@@ -250,7 +248,7 @@ const ModernRegisterPage: React.FC = () => {
                     sx={{ fontSize: '0.875rem' }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     size="small"
                     required
@@ -272,7 +270,7 @@ const ModernRegisterPage: React.FC = () => {
                     sx={{ fontSize: '0.875rem' }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     size="small"
                     required
@@ -298,7 +296,7 @@ const ModernRegisterPage: React.FC = () => {
                     sx={{ fontSize: '0.875rem' }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     size="small"
                     fullWidth
@@ -322,7 +320,7 @@ const ModernRegisterPage: React.FC = () => {
                     sx={{ fontSize: '0.875rem' }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel id="roles-label" sx={{ fontSize: '0.875rem' }}>Account Type</InputLabel>
                     <Select
@@ -346,7 +344,7 @@ const ModernRegisterPage: React.FC = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     size="small"
                     required
@@ -386,7 +384,7 @@ const ModernRegisterPage: React.FC = () => {
                     sx={{ fontSize: '0.875rem' }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     size="small"
                     required
@@ -446,13 +444,13 @@ const ModernRegisterPage: React.FC = () => {
               >
                 {loading ? 'Creating Account...' : 'Create Account'}
               </Button>
-              
+
               <Divider sx={{ my: 2 }}>
                 <Typography variant="caption" color="text.secondary">
                   Or continue with
                 </Typography>
               </Divider>
-              
+
               <Box display="flex" gap={1.5} mb={2.5}>
                 <Button
                   fullWidth
@@ -495,15 +493,15 @@ const ModernRegisterPage: React.FC = () => {
                   Facebook
                 </Button>
               </Box>
-              
+
               <Box textAlign="center">
                 <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
                   Already have an account?{' '}
-                  <Link 
-                    component={RouterLink} 
-                    to="/login" 
+                  <Link
+                    component={RouterLink}
+                    to="/login"
                     variant="body2"
-                    sx={{ 
+                    sx={{
                       fontWeight: 600,
                       color: 'primary.main',
                       '&:hover': {
@@ -519,7 +517,7 @@ const ModernRegisterPage: React.FC = () => {
             </Box>
           </Box>
         </Paper>
-        
+
         <Box textAlign="center" mt={3}>
           <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
             © {new Date().getFullYear()} AuctionHub. All rights reserved.

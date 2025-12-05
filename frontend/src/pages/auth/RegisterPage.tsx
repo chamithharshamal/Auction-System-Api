@@ -15,8 +15,8 @@ import {
   Chip,
   InputAdornment,
   IconButton,
+  Grid,
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
@@ -66,7 +66,7 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       return;
     }
@@ -102,9 +102,9 @@ const RegisterPage: React.FC = () => {
   const passwordMatch = formData.password === formData.confirmPassword;
   const isUsernameValid = /^[a-zA-Z0-9_]{3,50}$/.test(formData.username);
   const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,100}$/.test(formData.password);
-  const isFormValid = formData.username && formData.email && formData.password && 
-                     formData.firstName && formData.lastName && passwordMatch && 
-                     isUsernameValid && isPasswordValid;
+  const isFormValid = formData.username && formData.email && formData.password &&
+    formData.firstName && formData.lastName && passwordMatch &&
+    isUsernameValid && isPasswordValid;
 
   return (
     <Container component="main" maxWidth="sm" sx={{ px: { xs: 2, sm: 3 } }}>
@@ -142,10 +142,10 @@ const RegisterPage: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
             Join our auction platform and start bidding on amazing items today!
           </Typography>
-          
+
           <Alert severity="info" sx={{ mb: 3 }}>
             <Typography variant="body2">
-              <strong>Username requirements:</strong> 3-50 characters, letters, numbers, and underscores only (no email addresses)<br/>
+              <strong>Username requirements:</strong> 3-50 characters, letters, numbers, and underscores only (no email addresses)<br />
               <strong>Password requirements:</strong> 8-100 characters with at least one uppercase letter, one lowercase letter, and one digit
             </Typography>
           </Alert>
@@ -158,7 +158,7 @@ const RegisterPage: React.FC = () => {
 
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   autoComplete="given-name"
                   name="firstName"
@@ -178,7 +178,7 @@ const RegisterPage: React.FC = () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   required
                   fullWidth
@@ -190,7 +190,7 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   required
                   fullWidth
@@ -204,7 +204,7 @@ const RegisterPage: React.FC = () => {
                   error={!!formData.username && !isUsernameValid}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   required
                   fullWidth
@@ -224,7 +224,7 @@ const RegisterPage: React.FC = () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   id="phoneNumber"
@@ -242,7 +242,7 @@ const RegisterPage: React.FC = () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth>
                   <InputLabel id="roles-label">Account Type</InputLabel>
                   <Select
@@ -265,7 +265,7 @@ const RegisterPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   required
                   fullWidth
@@ -298,7 +298,7 @@ const RegisterPage: React.FC = () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   required
                   fullWidth

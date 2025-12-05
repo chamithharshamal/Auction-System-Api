@@ -19,8 +19,8 @@ import {
   Paper,
   ToggleButton,
   ToggleButtonGroup,
+  Grid,
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import {
   Search as SearchIcon,
   ViewList,
@@ -156,7 +156,7 @@ const AuctionListPage: React.FC = () => {
       {/* Filters */}
       <Paper sx={{ p: 3, mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               fullWidth
               placeholder="Search auctions..."
@@ -171,7 +171,7 @@ const AuctionListPage: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
               <Select
@@ -188,7 +188,7 @@ const AuctionListPage: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
@@ -204,7 +204,7 @@ const AuctionListPage: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Sort By</InputLabel>
               <Select
@@ -220,7 +220,7 @@ const AuctionListPage: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <Box display="flex" gap={1}>
               <Button
                 variant="contained"
@@ -260,7 +260,7 @@ const AuctionListPage: React.FC = () => {
         <>
           <Grid container spacing={3}>
             {auctions.content.map((auction) => (
-              <Grid item xs={12} sm={6} md={viewMode === 'grid' ? 4 : 12} key={auction.id}>
+              <Grid size={{ xs: 12, sm: 6, md: viewMode === 'grid' ? 4 : 12 }} key={auction.id}>
                 <Card
                   sx={{
                     height: '100%',

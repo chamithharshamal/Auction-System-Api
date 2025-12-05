@@ -23,8 +23,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Grid,
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import {
   Gavel,
   Person,
@@ -62,11 +62,11 @@ const AuctionDetailPage: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       // Load auction details first
       const auctionData = await auctionService.getAuctionById(id!);
       setAuction(auctionData);
-      
+
       // Then try to load bids (this might fail if no bids exist)
       try {
         const bidsData = await bidService.getRecentBidsForAuction(id!, 10);
@@ -170,7 +170,7 @@ const AuctionDetailPage: React.FC = () => {
 
       <Grid container spacing={4}>
         {/* Image Gallery */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             {auction.imageUrls && auction.imageUrls.length > 0 ? (
               <CardMedia
@@ -198,7 +198,7 @@ const AuctionDetailPage: React.FC = () => {
         </Grid>
 
         {/* Auction Details */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
@@ -342,13 +342,13 @@ const AuctionDetailPage: React.FC = () => {
                   Auction Information
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="body2" color="text.secondary">
                       Category
                     </Typography>
                     <Typography variant="body1">{auction.category}</Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="body2" color="text.secondary">
                       Start Date
                     </Typography>
@@ -356,7 +356,7 @@ const AuctionDetailPage: React.FC = () => {
                       {new Date(auction.startDate).toLocaleString()}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="body2" color="text.secondary">
                       End Date
                     </Typography>
@@ -364,7 +364,7 @@ const AuctionDetailPage: React.FC = () => {
                       {new Date(auction.endDate).toLocaleString()}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="body2" color="text.secondary">
                       Created
                     </Typography>

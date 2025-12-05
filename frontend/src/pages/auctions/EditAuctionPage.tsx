@@ -16,8 +16,8 @@ import {
   IconButton,
   Divider,
   Alert,
+  Grid,
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import {
   Add,
   Delete,
@@ -76,17 +76,17 @@ const EditAuctionPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const auctionData = await auctionService.getAuctionById(id!);
-      
+
       // Check if user is the seller
       if (auctionData.seller.id !== user?.id) {
         setError('You are not authorized to edit this auction');
         return;
       }
-      
+
       setAuction(auctionData);
-      
+
       // Initialize form data with auction details
       setFormData({
         title: auctionData.title,
@@ -108,8 +108,8 @@ const EditAuctionPage: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'reservePrice' 
-        ? parseFloat(value) || 0 
+      [name]: name === 'reservePrice'
+        ? parseFloat(value) || 0
         : value,
     }));
   };
@@ -148,7 +148,7 @@ const EditAuctionPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user || !auction) {
       setError('You must be logged in to edit an auction');
       return;
@@ -230,14 +230,14 @@ const EditAuctionPage: React.FC = () => {
           <Box component="form" onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               {/* Basic Information */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" gutterBottom>
                   Basic Information
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   required
                   fullWidth
@@ -249,7 +249,7 @@ const EditAuctionPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   required
                   fullWidth
@@ -263,7 +263,7 @@ const EditAuctionPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Category</InputLabel>
                   <Select
@@ -281,18 +281,18 @@ const EditAuctionPage: React.FC = () => {
               </Grid>
 
               {/* Pricing */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                   Pricing
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                
+
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Note: Starting price cannot be changed after auction creation. Only reserve price can be modified.
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   disabled
                   fullWidth
@@ -305,7 +305,7 @@ const EditAuctionPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   type="number"
@@ -322,14 +322,14 @@ const EditAuctionPage: React.FC = () => {
               </Grid>
 
               {/* Dates */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                   Auction Schedule
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <DateTimePicker
                   label="Start Date & Time"
                   value={formData.startDate ? new Date(formData.startDate) : null}
@@ -343,7 +343,7 @@ const EditAuctionPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <DateTimePicker
                   label="End Date & Time"
                   value={formData.endDate ? new Date(formData.endDate) : null}
@@ -358,18 +358,18 @@ const EditAuctionPage: React.FC = () => {
               </Grid>
 
               {/* Images */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                   Images
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Add image URLs to showcase your item. You can add multiple images.
                 </Typography>
-                
+
                 {formData.imageUrls.map((url, index) => (
                   <Card key={index} sx={{ mb: 2 }}>
                     <CardContent>
@@ -404,7 +404,7 @@ const EditAuctionPage: React.FC = () => {
               </Grid>
 
               {/* Submit */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box display="flex" gap={2} justifyContent="flex-end" sx={{ mt: 3 }}>
                   <Button
                     variant="outlined"

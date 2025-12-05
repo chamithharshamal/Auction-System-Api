@@ -28,7 +28,6 @@ import {
   ViewList,
   ViewModule,
   FilterAlt,
-  Sort,
 } from '@mui/icons-material';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import type { AuctionItem, PaginatedResponse } from '../../types/api';
@@ -150,10 +149,10 @@ const ModernAuctionListPage: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography 
-          variant="h2" 
-          component="h1" 
-          sx={{ 
+        <Typography
+          variant="h2"
+          component="h1"
+          sx={{
             fontWeight: 800,
             background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
             WebkitBackgroundClip: 'text',
@@ -183,7 +182,7 @@ const ModernAuctionListPage: React.FC = () => {
       {showFilters && (
         <Paper sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: '0 6px 16px rgba(0, 0, 0, 0.08)' }}>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
                 placeholder="Search auctions..."
@@ -199,7 +198,7 @@ const ModernAuctionListPage: React.FC = () => {
                 sx={{ borderRadius: 2 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
@@ -217,7 +216,7 @@ const ModernAuctionListPage: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -234,7 +233,7 @@ const ModernAuctionListPage: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Sort By</InputLabel>
                 <Select
@@ -251,7 +250,7 @@ const ModernAuctionListPage: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <Button
                 variant="contained"
                 onClick={handleSearch}
@@ -285,7 +284,7 @@ const ModernAuctionListPage: React.FC = () => {
             exclusive
             onChange={(_e, newMode) => newMode && setViewMode(newMode)}
             size="small"
-            sx={{ 
+            sx={{
               height: 40,
               '& .MuiToggleButton-root': {
                 borderRadius: 2,
@@ -311,7 +310,7 @@ const ModernAuctionListPage: React.FC = () => {
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((item) => (
-            <Grid item xs={12} sm={6} md={viewMode === 'grid' ? 4 : 12} key={item}>
+            <Grid size={{ xs: 12, sm: 6, md: viewMode === 'grid' ? 4 : 12 }} key={item}>
               <Skeleton variant="rounded" height={viewMode === 'grid' ? 400 : 200} sx={{ borderRadius: 3 }} />
             </Grid>
           ))}
@@ -320,7 +319,7 @@ const ModernAuctionListPage: React.FC = () => {
         <>
           <Grid container spacing={3}>
             {auctions.content.map((auction) => (
-              <Grid item xs={12} sm={6} md={viewMode === 'grid' ? 4 : 12} key={auction.id}>
+              <Grid size={{ xs: 12, sm: 6, md: viewMode === 'grid' ? 4 : 12 }} key={auction.id}>
                 <Card
                   sx={{
                     height: '100%',
@@ -353,11 +352,11 @@ const ModernAuctionListPage: React.FC = () => {
                   )}
                   <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', py: 2.5, px: 3 }}>
                     <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
-                      <Typography 
-                        variant="h5" 
-                        component="h3" 
+                      <Typography
+                        variant="h5"
+                        component="h3"
                         noWrap
-                        sx={{ 
+                        sx={{
                           fontWeight: 700,
                           color: 'text.primary',
                         }}
@@ -368,16 +367,16 @@ const ModernAuctionListPage: React.FC = () => {
                         label={auction.status}
                         color={getStatusColor(auction.status) as any}
                         size="small"
-                        sx={{ 
+                        sx={{
                           fontWeight: 700,
                           borderRadius: 1.5,
                         }}
                       />
                     </Box>
-                    <Typography 
-                      variant="body1" 
-                      color="text.secondary" 
-                      sx={{ 
+                    <Typography
+                      variant="body1"
+                      color="text.secondary"
+                      sx={{
                         mb: 2,
                         lineHeight: 1.6,
                       }}
@@ -386,25 +385,25 @@ const ModernAuctionListPage: React.FC = () => {
                     </Typography>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mt="auto">
                       <Box>
-                        <Typography 
-                          variant="h4" 
-                          sx={{ 
+                        <Typography
+                          variant="h4"
+                          sx={{
                             fontWeight: 800,
                             color: 'primary.main',
                           }}
                         >
                           {formatPrice(auction.currentPrice)}
                         </Typography>
-                        <Typography 
-                          variant="body2" 
+                        <Typography
+                          variant="body2"
                           color="text.secondary"
                           sx={{ fontWeight: 500 }}
                         >
                           {auction.totalBids} bids
                         </Typography>
                       </Box>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color="text.secondary"
                         sx={{ fontWeight: 600 }}
                       >
@@ -467,8 +466,8 @@ const ModernAuctionListPage: React.FC = () => {
         </>
       ) : (
         <Box textAlign="center" py={12}>
-          <Typography 
-            variant="h4" 
+          <Typography
+            variant="h4"
             color="text.secondary"
             sx={{ mb: 3, fontWeight: 500 }}
           >

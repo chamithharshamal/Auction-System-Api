@@ -67,11 +67,11 @@ const ModernAuctionDetailPage: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       // Load auction details first
       const auctionData = await auctionService.getAuctionById(id!);
       setAuction(auctionData);
-      
+
       // Then try to load bids (this might fail if no bids exist)
       try {
         const bidsData = await bidService.getRecentBidsForAuction(id!, 10);
@@ -154,10 +154,10 @@ const ModernAuctionDetailPage: React.FC = () => {
           Back
         </Button>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Skeleton variant="rounded" height={500} sx={{ borderRadius: 3 }} />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Skeleton variant="rounded" height={600} sx={{ borderRadius: 3 }} />
           </Grid>
         </Grid>
@@ -193,8 +193,8 @@ const ModernAuctionDetailPage: React.FC = () => {
       </Button>
 
       {error && (
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           onClose={() => setError(null)}
           sx={{ mb: 3, borderRadius: 3 }}
         >
@@ -202,8 +202,8 @@ const ModernAuctionDetailPage: React.FC = () => {
         </Alert>
       )}
       {success && (
-        <Alert 
-          severity="success" 
+        <Alert
+          severity="success"
           onClose={() => setSuccess(null)}
           sx={{ mb: 3, borderRadius: 3 }}
         >
@@ -213,7 +213,7 @@ const ModernAuctionDetailPage: React.FC = () => {
 
       <Grid container spacing={4}>
         {/* Image Gallery */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)' }}>
             {auction.imageUrls && auction.imageUrls.length > 0 ? (
               <CardMedia
@@ -242,15 +242,15 @@ const ModernAuctionDetailPage: React.FC = () => {
         </Grid>
 
         {/* Auction Details */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ borderRadius: 3, boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)' }}>
             <CardContent sx={{ py: 3, px: 4 }}>
               <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                 <Box>
-                  <Typography 
-                    variant="h2" 
+                  <Typography
+                    variant="h2"
                     component="h1"
-                    sx={{ 
+                    sx={{
                       fontWeight: 800,
                       mb: 1,
                       background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
@@ -265,7 +265,7 @@ const ModernAuctionDetailPage: React.FC = () => {
                     <Chip
                       label={auction.status || 'Unknown'}
                       color={getStatusColor(auction.status) as any}
-                      sx={{ 
+                      sx={{
                         fontWeight: 700,
                         borderRadius: 1.5,
                         mb: 1,
@@ -277,7 +277,7 @@ const ModernAuctionDetailPage: React.FC = () => {
                         label={getTimeRemaining(auction.endDate)}
                         color="primary"
                         variant="outlined"
-                        sx={{ 
+                        sx={{
                           fontWeight: 700,
                           borderRadius: 1.5,
                           mb: 1,
@@ -313,10 +313,10 @@ const ModernAuctionDetailPage: React.FC = () => {
                 </Box>
               </Box>
 
-              <Typography 
-                variant="body1" 
-                color="text.secondary" 
-                sx={{ 
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{
                   mb: 3,
                   fontSize: '1.1rem',
                   lineHeight: 1.7,
@@ -329,9 +329,9 @@ const ModernAuctionDetailPage: React.FC = () => {
 
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Box>
-                  <Typography 
-                    variant="h1" 
-                    sx={{ 
+                  <Typography
+                    variant="h1"
+                    sx={{
                       fontWeight: 800,
                       color: 'primary.main',
                       mb: 0.5,
@@ -339,8 +339,8 @@ const ModernAuctionDetailPage: React.FC = () => {
                   >
                     {formatPrice(auction.currentPrice)}
                   </Typography>
-                  <Typography 
-                    variant="h6" 
+                  <Typography
+                    variant="h6"
                     color="text.secondary"
                     sx={{ fontWeight: 600 }}
                   >
@@ -348,22 +348,22 @@ const ModernAuctionDetailPage: React.FC = () => {
                   </Typography>
                 </Box>
                 <Box textAlign="right">
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     color="text.secondary"
                     sx={{ mb: 1 }}
                   >
                     Starting Price
                   </Typography>
-                  <Typography 
-                    variant="h5" 
+                  <Typography
+                    variant="h5"
                     sx={{ fontWeight: 700 }}
                   >
                     {formatPrice(auction.startingPrice)}
                   </Typography>
                   {auction.reservePrice && (
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       color="text.secondary"
                       sx={{ mt: 1 }}
                     >
@@ -376,14 +376,14 @@ const ModernAuctionDetailPage: React.FC = () => {
               <Box display="flex" alignItems="center" gap={1} mb={3}>
                 <Schedule color="action" sx={{ fontSize: 28 }} />
                 <Box>
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     sx={{ fontWeight: 600 }}
                   >
                     Time Remaining
                   </Typography>
-                  <Typography 
-                    variant="h6" 
+                  <Typography
+                    variant="h6"
                     sx={{ fontWeight: 700, color: 'primary.main' }}
                   >
                     {auction.endDate ? getTimeRemaining(auction.endDate) : 'Unknown'}
@@ -394,15 +394,15 @@ const ModernAuctionDetailPage: React.FC = () => {
               <Box display="flex" alignItems="center" gap={1} mb={4}>
                 <Person color="action" sx={{ fontSize: 28 }} />
                 <Box>
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     sx={{ fontWeight: 600 }}
                   >
                     Seller
                   </Typography>
                   <Box display="flex" alignItems="center" gap={0.5}>
-                    <Typography 
-                      variant="h6" 
+                    <Typography
+                      variant="h6"
                       sx={{ fontWeight: 700 }}
                     >
                       {auction.seller?.firstName} {auction.seller?.lastName}
@@ -435,9 +435,9 @@ const ModernAuctionDetailPage: React.FC = () => {
               )}
 
               {!canBid || (auction.status !== 'ACTIVE' || user?.id === auction.seller?.id) && auction.status === 'ACTIVE' && (
-                <Alert 
+                <Alert
                   severity="info"
-                  sx={{ 
+                  sx={{
                     borderRadius: 3,
                     py: 2,
                     '& .MuiAlert-message': {
@@ -454,9 +454,9 @@ const ModernAuctionDetailPage: React.FC = () => {
               )}
 
               {auction.status === 'ENDED' && (
-                <Alert 
+                <Alert
                   severity="info"
-                  sx={{ 
+                  sx={{
                     borderRadius: 3,
                     py: 2,
                     '& .MuiAlert-message': {
@@ -477,8 +477,8 @@ const ModernAuctionDetailPage: React.FC = () => {
       {/* Tabs Section */}
       <Box sx={{ mt: 5 }}>
         <Paper sx={{ borderRadius: 3, boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)' }}>
-          <Tabs 
-            value={tabValue} 
+          <Tabs
+            value={tabValue}
             onChange={(_e, newValue) => setTabValue(newValue)}
             sx={{
               '& .MuiTab-root': {
@@ -499,10 +499,10 @@ const ModernAuctionDetailPage: React.FC = () => {
           <Box sx={{ p: 4 }}>
             {tabValue === 0 && (
               <Box>
-                <Typography 
-                  variant="h4" 
+                <Typography
+                  variant="h4"
                   gutterBottom
-                  sx={{ 
+                  sx={{
                     fontWeight: 700,
                     mb: 3,
                     background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
@@ -516,19 +516,19 @@ const ModernAuctionDetailPage: React.FC = () => {
                 {bids.length > 0 ? (
                   <List>
                     {bids.map((bid) => (
-                      <ListItem 
-                        key={bid.id} 
+                      <ListItem
+                        key={bid.id}
                         divider
-                        sx={{ 
+                        sx={{
                           py: 2,
                           '&:hover': {
                             backgroundColor: 'rgba(0, 121, 107, 0.03)',
                           },
                         }}
                       >
-                        <Avatar 
-                          sx={{ 
-                            mr: 3, 
+                        <Avatar
+                          sx={{
+                            mr: 3,
                             bgcolor: 'primary.main',
                             width: 56,
                             height: 56,
@@ -542,22 +542,22 @@ const ModernAuctionDetailPage: React.FC = () => {
                           primary={
                             <Box display="flex" justifyContent="space-between" alignItems="center">
                               <Box>
-                                <Typography 
-                                  variant="h6" 
+                                <Typography
+                                  variant="h6"
                                   sx={{ fontWeight: 700 }}
                                 >
                                   {bid.bidder?.firstName} {bid.bidder?.lastName}
                                 </Typography>
-                                <Typography 
-                                  variant="body2" 
+                                <Typography
+                                  variant="body2"
                                   color="text.secondary"
                                 >
                                   {bid.timestamp ? new Date(bid.timestamp).toLocaleString() : 'Unknown date'}
                                 </Typography>
                               </Box>
-                              <Typography 
-                                variant="h4" 
-                                sx={{ 
+                              <Typography
+                                variant="h4"
+                                sx={{
                                   fontWeight: 800,
                                   color: 'primary.main',
                                 }}
@@ -571,9 +571,9 @@ const ModernAuctionDetailPage: React.FC = () => {
                     ))}
                   </List>
                 ) : (
-                  <Typography 
+                  <Typography
                     color="text.secondary"
-                    sx={{ 
+                    sx={{
                       textAlign: 'center',
                       py: 6,
                       fontSize: '1.2rem',
@@ -588,10 +588,10 @@ const ModernAuctionDetailPage: React.FC = () => {
 
             {tabValue === 1 && (
               <Box>
-                <Typography 
-                  variant="h4" 
+                <Typography
+                  variant="h4"
                   gutterBottom
-                  sx={{ 
+                  sx={{
                     fontWeight: 700,
                     mb: 3,
                     background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
@@ -603,60 +603,60 @@ const ModernAuctionDetailPage: React.FC = () => {
                   Auction Information
                 </Typography>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography 
-                      variant="body1" 
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="body1"
                       color="text.secondary"
                       sx={{ fontWeight: 600, mb: 1 }}
                     >
                       Category
                     </Typography>
-                    <Typography 
+                    <Typography
                       variant="h6"
                       sx={{ fontWeight: 700 }}
                     >
                       {auction.category || 'Unknown'}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography 
-                      variant="body1" 
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="body1"
                       color="text.secondary"
                       sx={{ fontWeight: 600, mb: 1 }}
                     >
                       Start Date
                     </Typography>
-                    <Typography 
+                    <Typography
                       variant="h6"
                       sx={{ fontWeight: 700 }}
                     >
                       {auction.startDate ? new Date(auction.startDate).toLocaleString() : 'Unknown'}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography 
-                      variant="body1" 
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="body1"
                       color="text.secondary"
                       sx={{ fontWeight: 600, mb: 1 }}
                     >
                       End Date
                     </Typography>
-                    <Typography 
+                    <Typography
                       variant="h6"
                       sx={{ fontWeight: 700 }}
                     >
                       {auction.endDate ? new Date(auction.endDate).toLocaleString() : 'Unknown'}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography 
-                      variant="body1" 
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="body1"
                       color="text.secondary"
                       sx={{ fontWeight: 600, mb: 1 }}
                     >
                       Created
                     </Typography>
-                    <Typography 
+                    <Typography
                       variant="h6"
                       sx={{ fontWeight: 700 }}
                     >
@@ -669,10 +669,10 @@ const ModernAuctionDetailPage: React.FC = () => {
 
             {tabValue === 2 && (
               <Box>
-                <Typography 
-                  variant="h4" 
+                <Typography
+                  variant="h4"
                   gutterBottom
-                  sx={{ 
+                  sx={{
                     fontWeight: 700,
                     mb: 3,
                     background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
@@ -684,8 +684,8 @@ const ModernAuctionDetailPage: React.FC = () => {
                   Seller Information
                 </Typography>
                 <Box display="flex" alignItems="center" gap={3} mb={3}>
-                  <Avatar 
-                    sx={{ 
+                  <Avatar
+                    sx={{
                       bgcolor: 'primary.main',
                       width: 80,
                       height: 80,
@@ -696,29 +696,29 @@ const ModernAuctionDetailPage: React.FC = () => {
                     {auction.seller?.firstName?.charAt(0) || auction.seller?.username?.charAt(0) || 'S'}
                   </Avatar>
                   <Box>
-                    <Typography 
+                    <Typography
                       variant="h4"
                       sx={{ fontWeight: 700, mb: 0.5 }}
                     >
                       {auction.seller?.firstName} {auction.seller?.lastName}
                     </Typography>
-                    <Typography 
-                      variant="h6" 
+                    <Typography
+                      variant="h6"
                       color="text.secondary"
                       sx={{ mb: 1 }}
                     >
                       @{auction.seller?.username}
                     </Typography>
-                    <Chip 
-                      label="Verified Seller" 
-                      icon={<Verified />} 
-                      color="success" 
-                      sx={{ fontWeight: 700 }} 
+                    <Chip
+                      label="Verified Seller"
+                      icon={<Verified />}
+                      color="success"
+                      sx={{ fontWeight: 700 }}
                     />
                   </Box>
                 </Box>
-                <Typography 
-                  variant="body1" 
+                <Typography
+                  variant="body1"
                   color="text.secondary"
                   sx={{ fontSize: '1.1rem' }}
                 >
@@ -731,17 +731,17 @@ const ModernAuctionDetailPage: React.FC = () => {
       </Box>
 
       {/* Bid Dialog */}
-      <Dialog 
-        open={bidDialogOpen} 
-        onClose={() => setBidDialogOpen(false)} 
-        maxWidth="sm" 
+      <Dialog
+        open={bidDialogOpen}
+        onClose={() => setBidDialogOpen(false)}
+        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: { borderRadius: 3 },
         }}
       >
-        <DialogTitle 
-          sx={{ 
+        <DialogTitle
+          sx={{
             fontWeight: 700,
             fontSize: '1.5rem',
             pb: 1,
@@ -750,15 +750,15 @@ const ModernAuctionDetailPage: React.FC = () => {
           Place a Bid
         </DialogTitle>
         <DialogContent>
-          <Typography 
-            variant="body1" 
-            sx={{ 
+          <Typography
+            variant="body1"
+            sx={{
               mb: 3,
               fontWeight: 500,
               fontSize: '1.1rem',
             }}
           >
-            Current highest bid: 
+            Current highest bid:
             <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>
               {' '}{formatPrice(auction.currentPrice)}
             </Box>
@@ -774,7 +774,7 @@ const ModernAuctionDetailPage: React.FC = () => {
             onChange={(e) => setBidAmount(e.target.value)}
             inputProps={{ min: auction.currentPrice + 1, step: 0.01 }}
             helperText={`Minimum bid: ${formatPrice(auction.currentPrice + 1)}`}
-            sx={{ 
+            sx={{
               mb: 2,
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
@@ -783,7 +783,7 @@ const ModernAuctionDetailPage: React.FC = () => {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button 
+          <Button
             onClick={() => setBidDialogOpen(false)}
             sx={{
               py: 1.5,
@@ -803,17 +803,9 @@ const ModernAuctionDetailPage: React.FC = () => {
               px: 3,
               fontWeight: 700,
               borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0, 121, 107, 0.25)',
-              '&:hover': {
-                boxShadow: '0 6px 16px rgba(0, 121, 107, 0.35)',
-              },
-              '&.Mui-disabled': {
-                backgroundColor: 'grey.300',
-                color: 'grey.500',
-              },
             }}
           >
-            Place Bid
+            Confirm Bid
           </Button>
         </DialogActions>
       </Dialog>

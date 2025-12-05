@@ -11,7 +11,6 @@ import {
   Chip,
   Paper,
   InputBase,
-  IconButton,
   FormControl,
   Select,
   MenuItem,
@@ -19,7 +18,6 @@ import {
   Skeleton,
 } from '@mui/material';
 import {
-  Search as SearchIcon,
   Gavel,
   TrendingUp,
   Schedule,
@@ -138,25 +136,25 @@ const ModernHomePage: React.FC = () => {
           overflow: 'hidden',
         }}
       >
-        <Box 
-          sx={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 20%)',
             opacity: 0.3,
-          }} 
+          }}
         />
         <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, position: 'relative' }}>
           <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Typography 
-                variant="h1" 
-                component="h1" 
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography
+                variant="h1"
+                component="h1"
                 gutterBottom
-                sx={{ 
+                sx={{
                   fontWeight: 800,
                   lineHeight: 1.1,
                   mb: 2,
@@ -167,17 +165,17 @@ const ModernHomePage: React.FC = () => {
                   {' '}Auctions
                 </Box>
               </Typography>
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  mb: 4, 
+              <Typography
+                variant="h4"
+                sx={{
+                  mb: 4,
                   opacity: 0.95,
                   fontWeight: 400,
                 }}
               >
                 Find unique items, place bids, and win the perfect auction for you.
               </Typography>
-              
+
               {/* Search Section */}
               <Paper
                 component="form"
@@ -197,8 +195,8 @@ const ModernHomePage: React.FC = () => {
                   placeholder="Search auctions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  sx={{ 
-                    flex: 1, 
+                  sx={{
+                    flex: 1,
                     color: '#00796b',
                     pl: 3,
                     fontSize: '1.1rem',
@@ -213,8 +211,8 @@ const ModernHomePage: React.FC = () => {
                     MenuProps={{
                       disableScrollLock: true, // This prevents the scrollbar issue
                     }}
-                    sx={{ 
-                      color: '#00796b', 
+                    sx={{
+                      color: '#00796b',
                       fontWeight: 600,
                       '& .MuiSelect-select': {
                         py: 1.5,
@@ -254,7 +252,7 @@ const ModernHomePage: React.FC = () => {
                 </Button>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box
                 sx={{
                   display: 'flex',
@@ -301,10 +299,10 @@ const ModernHomePage: React.FC = () => {
         {/* Featured Auctions */}
         <Box sx={{ mb: 8 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-            <Typography 
-              variant="h2" 
-              component="h2" 
-              sx={{ 
+            <Typography
+              variant="h2"
+              component="h2"
+              sx={{
                 fontWeight: 800,
                 background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
                 WebkitBackgroundClip: 'text',
@@ -336,11 +334,11 @@ const ModernHomePage: React.FC = () => {
               View All
             </Button>
           </Box>
-          
+
           {loading ? (
             <Grid container spacing={4}>
               {[1, 2, 3].map((item) => (
-                <Grid item xs={12} sm={6} md={4} key={item}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item}>
                   <Skeleton variant="rounded" height={400} sx={{ borderRadius: 3 }} />
                 </Grid>
               ))}
@@ -348,7 +346,7 @@ const ModernHomePage: React.FC = () => {
           ) : (
             <Grid container spacing={4}>
               {featuredAuctions.map((auction) => (
-                <Grid item xs={12} sm={6} md={4} key={auction.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={auction.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -389,11 +387,11 @@ const ModernHomePage: React.FC = () => {
                     )}
                     <CardContent sx={{ flexGrow: 1, py: 2.5, px: 3 }}>
                       <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
-                        <Typography 
-                          variant="h5" 
-                          component="h3" 
+                        <Typography
+                          variant="h5"
+                          component="h3"
                           noWrap
-                          sx={{ 
+                          sx={{
                             fontWeight: 700,
                             color: 'text.primary',
                           }}
@@ -404,16 +402,16 @@ const ModernHomePage: React.FC = () => {
                           label={auction.status}
                           color={getStatusColor(auction.status) as any}
                           size="small"
-                          sx={{ 
+                          sx={{
                             fontWeight: 700,
                             borderRadius: 1.5,
                           }}
                         />
                       </Box>
-                      <Typography 
-                        variant="body1" 
-                        color="text.secondary" 
-                        sx={{ 
+                      <Typography
+                        variant="body1"
+                        color="text.secondary"
+                        sx={{
                           mb: 2,
                           lineHeight: 1.6,
                         }}
@@ -422,25 +420,25 @@ const ModernHomePage: React.FC = () => {
                       </Typography>
                       <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Box>
-                          <Typography 
-                            variant="h4" 
-                            sx={{ 
+                          <Typography
+                            variant="h4"
+                            sx={{
                               fontWeight: 800,
                               color: 'primary.main',
                             }}
                           >
                             {formatPrice(auction.currentPrice)}
                           </Typography>
-                          <Typography 
-                            variant="body2" 
+                          <Typography
+                            variant="body2"
                             color="text.secondary"
                             sx={{ fontWeight: 500 }}
                           >
                             {auction.totalBids} bids
                           </Typography>
                         </Box>
-                        <Typography 
-                          variant="body2" 
+                        <Typography
+                          variant="body2"
                           color="text.secondary"
                           sx={{ fontWeight: 600 }}
                         >
@@ -481,10 +479,10 @@ const ModernHomePage: React.FC = () => {
           <Box sx={{ mb: 8 }}>
             <Box display="flex" alignItems="center" mb={4}>
               <Schedule sx={{ fontSize: 36, color: '#ff6b6b', mr: 1.5 }} />
-              <Typography 
-                variant="h2" 
-                component="h2" 
-                sx={{ 
+              <Typography
+                variant="h2"
+                component="h2"
+                sx={{
                   fontWeight: 800,
                   background: `linear-gradient(45deg, ${'#ff6b6b'}, ${'#ff8e8e'})`,
                   WebkitBackgroundClip: 'text',
@@ -495,10 +493,10 @@ const ModernHomePage: React.FC = () => {
                 Ending Soon
               </Typography>
             </Box>
-            
+
             <Grid container spacing={3}>
               {endingSoonAuctions.slice(0, 4).map((auction) => (
-                <Grid item xs={12} sm={6} md={3} key={auction.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={auction.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -536,19 +534,19 @@ const ModernHomePage: React.FC = () => {
                       </Box>
                     )}
                     <CardContent sx={{ py: 2, px: 2.5 }}>
-                      <Typography 
-                        variant="h6" 
+                      <Typography
+                        variant="h6"
                         noWrap
-                        sx={{ 
+                        sx={{
                           fontWeight: 700,
                           mb: 1,
                         }}
                       >
                         {auction.title}
                       </Typography>
-                      <Typography 
-                        variant="h5" 
-                        sx={{ 
+                      <Typography
+                        variant="h5"
+                        sx={{
                           fontWeight: 800,
                           color: '#ff6b6b',
                           mb: 0.5,
@@ -556,9 +554,9 @@ const ModernHomePage: React.FC = () => {
                       >
                         {formatPrice(auction.currentPrice)}
                       </Typography>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
+                      <Typography
+                        variant="body2"
+                        sx={{
                           color: '#ff6b6b',
                           fontWeight: 600,
                         }}
@@ -578,10 +576,10 @@ const ModernHomePage: React.FC = () => {
           <Box sx={{ mb: 8 }}>
             <Box display="flex" alignItems="center" mb={4}>
               <TrendingUp sx={{ fontSize: 36, color: '#00796b', mr: 1.5 }} />
-              <Typography 
-                variant="h2" 
-                component="h2" 
-                sx={{ 
+              <Typography
+                variant="h2"
+                component="h2"
+                sx={{
                   fontWeight: 800,
                   background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
                   WebkitBackgroundClip: 'text',
@@ -592,10 +590,10 @@ const ModernHomePage: React.FC = () => {
                 Top Auctions
               </Typography>
             </Box>
-            
+
             <Grid container spacing={3}>
               {topAuctions.map((auction) => (
-                <Grid item xs={12} sm={6} md={3} key={auction.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={auction.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -633,19 +631,19 @@ const ModernHomePage: React.FC = () => {
                       </Box>
                     )}
                     <CardContent sx={{ py: 2, px: 2.5 }}>
-                      <Typography 
-                        variant="h6" 
+                      <Typography
+                        variant="h6"
                         noWrap
-                        sx={{ 
+                        sx={{
                           fontWeight: 700,
                           mb: 1,
                         }}
                       >
                         {auction.title}
                       </Typography>
-                      <Typography 
-                        variant="h5" 
-                        sx={{ 
+                      <Typography
+                        variant="h5"
+                        sx={{
                           fontWeight: 800,
                           color: 'primary.main',
                           mb: 0.5,
@@ -653,8 +651,8 @@ const ModernHomePage: React.FC = () => {
                       >
                         {formatPrice(auction.currentPrice)}
                       </Typography>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color="text.secondary"
                         sx={{ fontWeight: 500 }}
                       >
@@ -681,22 +679,22 @@ const ModernHomePage: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          <Box 
-            sx={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              bottom: 0, 
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               backgroundImage: 'radial-gradient(circle at 15% 30%, rgba(0, 121, 107, 0.05) 0%, transparent 15%)',
-            }} 
+            }}
           />
           <Container maxWidth="sm">
-            <Typography 
-              variant="h2" 
-              component="h2" 
+            <Typography
+              variant="h2"
+              component="h2"
               gutterBottom
-              sx={{ 
+              sx={{
                 fontWeight: 800,
                 mb: 2,
                 background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
@@ -707,10 +705,10 @@ const ModernHomePage: React.FC = () => {
             >
               Ready to Start Bidding?
             </Typography>
-            <Typography 
-              variant="h5" 
-              color="text.secondary" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              color="text.secondary"
+              sx={{
                 mb: 4,
                 fontWeight: 400,
               }}

@@ -10,8 +10,8 @@ import {
   Button,
   Chip,
   Fab,
+  Grid,
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import {
   Add,
   Gavel,
@@ -107,7 +107,7 @@ const MyAuctionsPage: React.FC = () => {
       {auctions && auctions.content.length > 0 ? (
         <Grid container spacing={3}>
           {auctions.content.map((auction) => (
-            <Grid item xs={12} sm={6} md={4} key={auction.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={auction.id}>
               <Card
                 sx={{
                   height: '100%',

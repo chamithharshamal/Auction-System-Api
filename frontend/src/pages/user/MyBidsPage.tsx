@@ -10,8 +10,8 @@ import {
   Chip,
   Tabs,
   Tab,
+  Grid,
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import {
   Gavel,
   AttachMoney,
@@ -115,7 +115,7 @@ const MyBidsPage: React.FC = () => {
           {bids && bids.content.length > 0 ? (
             <Grid container spacing={3}>
               {bids.content.map((bid) => (
-                <Grid item xs={12} sm={6} md={4} key={bid.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={bid.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -141,7 +141,7 @@ const MyBidsPage: React.FC = () => {
                           size="small"
                         />
                       </Box>
-                      
+
                       <Box display="flex" alignItems="center" gap={1} mb={2}>
                         <AttachMoney color="primary" />
                         <Typography variant="h5" color="primary.main">
@@ -203,7 +203,7 @@ const MyBidsPage: React.FC = () => {
           {winningBids.length > 0 ? (
             <Grid container spacing={3}>
               {winningBids.map((bid) => (
-                <Grid item xs={12} sm={6} md={4} key={bid.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={bid.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -231,7 +231,7 @@ const MyBidsPage: React.FC = () => {
                           size="small"
                         />
                       </Box>
-                      
+
                       <Box display="flex" alignItems="center" gap={1} mb={2}>
                         <AttachMoney color="success" />
                         <Typography variant="h5" color="success.main">
