@@ -199,7 +199,15 @@ public class EmailService {
             throws MessagingException {
 
         if (mailSender == null) {
-            logger.warn("JavaMailSender is not available, skipping email: {} to {}", subject, to);
+            logger.warn("JavaMailSender is not available (Dev Mode), skipping email: '{}' to '{}'", subject, to);
+            return;
+        }
+
+        // Check if we have actual credentials (simple check)
+        if (emailConfig.getFromEmail() == null || emailConfig.getFromEmail().contains("example.com")
+                || emailConfig.getFromEmail().isEmpty()) {
+            logger.info("[DEV MODE] Email would be sent to: {} with subject: {}", to, subject);
+            logger.info("[DEV MODE] Email Content Preview: {}...", variables.toString());
             return;
         }
 

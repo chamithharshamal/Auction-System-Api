@@ -41,6 +41,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import type { AuctionItem, Bid, PlaceBidRequest } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
 import { bidService } from '../../services/bidService';
+import { webSocketService } from '../../services/webSocketService';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ModernAuctionDetailPage: React.FC = () => {
@@ -60,6 +61,28 @@ const ModernAuctionDetailPage: React.FC = () => {
   useEffect(() => {
     if (id) {
       loadAuctionDetails();
+
+      // Subscribe to real-time updates
+      webSocketService.connect();
+      webSocketService.subscribeToAuction(id, (message: any) => {
+        // Handle new bid notification
+        if (message && message.amount) {
+          setAuction(prev => prev ? ({
+            ...prev,
+            currentPrice: message.amount,
+            totalBids: (prev.totalBids || 0) + 1,
+            // If the message contains bidder info, we could update that too if needed
+            // But typically the bid notification structure needs to match what we expect
+          }) : null);
+
+          // Add to bids list
+          setBids(prev => [message, ...prev]);
+        }
+      });
+
+      return () => {
+        webSocketService.disconnect();
+      };
     }
   }, [id]);
 
