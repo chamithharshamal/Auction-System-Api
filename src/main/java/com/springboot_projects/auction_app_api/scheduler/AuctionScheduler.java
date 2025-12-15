@@ -1,8 +1,11 @@
 package com.springboot_projects.auction_app_api.scheduler;
 
 import com.springboot_projects.auction_app_api.model.AuctionItem;
+import com.springboot_projects.auction_app_api.model.Bid;
 import com.springboot_projects.auction_app_api.repository.AuctionItemRepository;
 import com.springboot_projects.auction_app_api.service.AuctionItemService;
+import com.springboot_projects.auction_app_api.service.BidService;
+import com.springboot_projects.auction_app_api.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AuctionScheduler {
@@ -22,6 +26,12 @@ public class AuctionScheduler {
 
     @Autowired
     private AuctionItemService auctionItemService;
+
+    @Autowired
+    private BidService bidService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Scheduled(fixedRate = 60000) // Run every minute
     public void closeExpiredAuctions() {
@@ -49,7 +59,19 @@ public class AuctionScheduler {
 
                 // We use the service method to ensure all business logic (notifications, status
                 // update) is executed
-                auctionItemService.endAuction(auction.getId());
+                AuctionItem endedAuction = auctionItemService.endAuction(auction.getId());
+
+                // Send email to seller
+                emailService.sendAuctionEndedEmail(endedAuction.getSeller(), endedAuction);
+
+                // If there is a winner, send email to winner
+                if (endedAuction.getHighestBidder() != null) {
+                    Optional<Bid> winningBid = bidService.getHighestBidForAuction(endedAuction);
+                    if (winningBid.isPresent()) {
+                        emailService.sendAuctionWonEmail(endedAuction.getHighestBidder(), endedAuction,
+                                winningBid.get());
+                    }
+                }
 
             } catch (Exception e) {
                 logger.error("Failed to auto-close auction: {}", auction.getId(), e);

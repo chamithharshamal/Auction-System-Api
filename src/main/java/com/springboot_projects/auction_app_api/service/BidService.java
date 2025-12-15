@@ -29,6 +29,13 @@ public class BidService {
     @Autowired
     private WebSocketNotificationService webSocketNotificationService;
 
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private UserService userService;
+
+    // Place a new bid
     // Place a new bid
     @Transactional
     public Bid placeBid(String auctionId, String bidderId, BigDecimal bidAmount) {
@@ -43,10 +50,14 @@ public class BidService {
         // Validate bid
         validateBid(auction, bidderId, bidAmount);
 
-        // Create new bid
-        User bidder = new User();
-        bidder.setId(bidderId);
+        // Get bidder
+        Optional<User> bidderOpt = userService.getUserById(bidderId);
+        if (!bidderOpt.isPresent()) {
+            throw new RuntimeException("User not found with id: " + bidderId);
+        }
+        User bidder = bidderOpt.get();
 
+        // Create new bid
         Bid newBid = new Bid(bidAmount, bidder, auction);
         newBid.setStatus(Bid.BidStatus.WINNING);
 
@@ -61,6 +72,9 @@ public class BidService {
 
         // Notify subscribers about the new bid
         webSocketNotificationService.notifyNewBid(auctionId, savedBid);
+
+        // Send confirmation email
+        emailService.sendBidConfirmationEmail(bidder, savedBid, auction);
 
         return savedBid;
     }
@@ -250,10 +264,48 @@ public class BidService {
     }
 
     private void updatePreviousBidsStatus(AuctionItem auction, BigDecimal newHighestBid) {
-        List<Bid> outbidBids = bidRepository.findOutbidBids(auction, newHighestBid);
-        for (Bid bid : outbidBids) {
-            bid.setStatus(Bid.BidStatus.OUTBID);
-            bidRepository.save(bid);
+        // We need to find the previous "Winning" bid, which is now outbid.
+        // We know that the NEW bid (just placed) is the latest one.
+        // So we get the top 2 bids by timestamp (latest first).
+        // Index 0: New Bid (WINNING)
+        // Index 1: Previous Bid (Should be marked OUTBID)
+
+        List<Bid> recentBids = bidRepository.findByAuctionItemOrderByTimestampDesc(auction);
+
+        // Update all non-winning bids to OUTBID just to be safe and consistent
+        for (Bid bid : recentBids) {
+            // Skip the current winning bid (the new one) based on ID or amount matching
+            // newHighestBid
+            if (bid.getAmount().compareTo(newHighestBid) == 0 && bid.getStatus() == Bid.BidStatus.WINNING) {
+                continue;
+            }
+
+            // If it was ACTIVE or WINNING before, and is lower, it's outbid
+            if ((bid.getStatus() == Bid.BidStatus.ACTIVE || bid.getStatus() == Bid.BidStatus.WINNING)
+                    && bid.getAmount().compareTo(newHighestBid) < 0) {
+                bid.setStatus(Bid.BidStatus.OUTBID);
+                bidRepository.save(bid);
+            }
+        }
+
+        // Send delayed notification SPECIFICALLY to the second highest bidder (previous
+        // winner)
+        if (recentBids.size() >= 2) {
+            Bid previousWinningBid = recentBids.get(1);
+
+            // Double check it's not the same user (e.g. self-outbidding logic if allowed,
+            // though prevented elsewhere)
+            if (previousWinningBid.getBidder() != null) {
+                try {
+                    // Fetch full user details to ensure email is present
+                    Optional<User> userOpt = userService.getUserById(previousWinningBid.getBidder().getId());
+                    if (userOpt.isPresent()) {
+                        emailService.sendOutbidNotificationEmail(userOpt.get(), auction, newHighestBid);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error sending outbid email: " + e.getMessage());
+                }
+            }
         }
     }
 }
