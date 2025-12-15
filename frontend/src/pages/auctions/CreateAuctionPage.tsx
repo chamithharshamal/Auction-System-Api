@@ -57,6 +57,7 @@ const CreateAuctionPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const categories = [
     'Electronics',
@@ -71,6 +72,7 @@ const CreateAuctionPage: React.FC = () => {
     'Other',
   ];
 
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -79,6 +81,10 @@ const CreateAuctionPage: React.FC = () => {
         ? parseFloat(value) || 0
         : value,
     }));
+    // Clear error when user types
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleDateChange = (name: string, value: Date | null) => {
@@ -111,21 +117,52 @@ const CreateAuctionPage: React.FC = () => {
     }));
   };
 
-  const validateStep = (step: number) => {
+  const validateStep = (step: number): boolean => {
+    const errors: Record<string, string> = {};
+    let isValid = true;
+
     switch (step) {
       case 0: // Details
-        return !!formData.title && !!formData.description && !!formData.category;
+        if (!formData.title.trim()) {
+          errors.title = 'Title is required';
+        } else if (formData.title.length < 3) {
+          errors.title = 'Title must be at least 3 characters';
+        }
+
+        if (!formData.description.trim()) {
+          errors.description = 'Description is required';
+        } else if (formData.description.length < 10) {
+          errors.description = 'Description must be at least 10 characters';
+        }
+
+        if (!formData.category) errors.category = 'Category is required';
+        break;
       case 1: // Pricing
-        return formData.startingPrice > 0 &&
-          (formData.reservePrice === 0 || formData.reservePrice >= formData.startingPrice);
+        if (formData.startingPrice <= 0) errors.startingPrice = 'Starting price must be greater than 0';
+        if (formData.reservePrice > 0 && formData.reservePrice < formData.startingPrice) {
+          errors.reservePrice = 'Reserve price cannot be less than starting price';
+        }
+        break;
       case 2: // Schedule
-        return !!formData.startDate && !!formData.endDate &&
-          new Date(formData.endDate) > new Date(formData.startDate);
-      case 3: // Images
-        return true; // Images are optional, but could enforce at least one
-      default:
-        return false;
+        if (!formData.startDate) errors.startDate = 'Start date is required';
+        if (!formData.endDate) errors.endDate = 'End date is required';
+        if (formData.startDate && formData.endDate) {
+          const start = new Date(formData.startDate);
+          const end = new Date(formData.endDate);
+          const now = new Date();
+
+          if (start < now) errors.startDate = 'Start date cannot be in the past';
+          if (end <= start) errors.endDate = 'End date must be after start date';
+        }
+        break;
     }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      isValid = false;
+    }
+
+    return isValid;
   };
 
   const handleNext = () => {
@@ -185,6 +222,8 @@ const CreateAuctionPage: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Enter a descriptive title"
                 variant="outlined"
+                error={!!fieldErrors.title}
+                helperText={fieldErrors.title}
               />
             </Grid>
             <Grid size={12}>
@@ -199,6 +238,8 @@ const CreateAuctionPage: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Describe the item in detail..."
                 variant="outlined"
+                error={!!fieldErrors.description}
+                helperText={fieldErrors.description}
               />
             </Grid>
             <Grid size={12}>
@@ -215,6 +256,11 @@ const CreateAuctionPage: React.FC = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {fieldErrors.category && (
+                  <Typography color="error" variant="caption" sx={{ ml: 2, mt: 0.5 }}>
+                    {fieldErrors.category}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
           </Grid>
@@ -235,6 +281,8 @@ const CreateAuctionPage: React.FC = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
+                error={!!fieldErrors.startingPrice}
+                helperText={fieldErrors.startingPrice}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -249,7 +297,8 @@ const CreateAuctionPage: React.FC = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
-                helperText="Minimum price you're willing to accept"
+                helperText={fieldErrors.reservePrice || "Minimum price you're willing to accept"}
+                error={!!fieldErrors.reservePrice}
               />
             </Grid>
           </Grid>
@@ -266,6 +315,8 @@ const CreateAuctionPage: React.FC = () => {
                   textField: {
                     fullWidth: true,
                     required: true,
+                    error: !!fieldErrors.startDate,
+                    helperText: fieldErrors.startDate,
                   },
                 }}
               />
@@ -279,6 +330,8 @@ const CreateAuctionPage: React.FC = () => {
                   textField: {
                     fullWidth: true,
                     required: true,
+                    error: !!fieldErrors.endDate,
+                    helperText: fieldErrors.endDate,
                   },
                 }}
               />

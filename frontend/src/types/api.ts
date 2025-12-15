@@ -67,6 +67,7 @@ export interface AuctionItem {
   totalBids: number;
   createdAt: string;
   updatedAt: string;
+  paid: boolean;
 }
 
 export enum AuctionStatus {

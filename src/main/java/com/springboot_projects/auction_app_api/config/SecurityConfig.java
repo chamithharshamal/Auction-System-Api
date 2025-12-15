@@ -19,6 +19,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.http.HttpMethod;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -64,6 +66,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/users/check-username/**").permitAll()
                         .requestMatchers("/api/users/check-email/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        // Bid viewing - Public access for viewing bids (Explicitly permissive)
+                        .requestMatchers(HttpMethod.GET, "/api/bids/auction/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/bids/auction/*/recent").permitAll()
 
                         // User management - Admin access for listing, authenticated for individual
                         // access
@@ -84,21 +90,24 @@ public class SecurityConfig {
                         .requestMatchers("/api/auctions/{id}").permitAll() // View specific auction
 
                         // Auction management - Seller only
+                        // Auction management - Seller only
                         .requestMatchers("POST", "/api/auctions").hasRole("SELLER")
-                        .requestMatchers("PUT", "/api/auctions/**").hasRole("SELLER")
-                        .requestMatchers("PATCH", "/api/auctions/**/start").hasRole("SELLER")
-                        .requestMatchers("PATCH", "/api/auctions/**/end").hasRole("SELLER")
-                        .requestMatchers("PATCH", "/api/auctions/**/cancel").hasRole("SELLER")
-                        .requestMatchers("DELETE", "/api/auctions/**").hasRole("SELLER")
+                        .requestMatchers("PUT", "/api/auctions/*").hasRole("SELLER")
+                        .requestMatchers("PATCH", "/api/auctions/*/start").hasRole("SELLER")
+                        .requestMatchers("PATCH", "/api/auctions/*/end").hasRole("SELLER")
+                        .requestMatchers("PATCH", "/api/auctions/*/cancel").hasRole("SELLER")
+                        .requestMatchers("DELETE", "/api/auctions/*").hasRole("SELLER")
 
                         // Bidding - Bidder only
                         .requestMatchers("POST", "/api/bids/**").hasRole("BIDDER")
-                        .requestMatchers("PATCH", "/api/bids/**/cancel").hasRole("BIDDER")
+                        .requestMatchers("PATCH", "/api/bids/*/cancel").hasRole("BIDDER")
 
                         // Bid viewing - Public access for viewing bids
-                        .requestMatchers("GET", "/api/bids/auction/**/recent").permitAll()
-                        .requestMatchers("GET", "/api/bids/auction/**/highest").permitAll()
-                        .requestMatchers("GET", "/api/bids/**").authenticated()
+                        // Bid viewing - Public access for viewing bids
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/bids/**").authenticated()
+
+                        // Payment
+                        .requestMatchers("/api/payment/**").hasRole("BIDDER")
 
                         // All other requests require authentication
                         .anyRequest().authenticated())

@@ -26,6 +26,9 @@ public class BidService {
     @Autowired
     private AuctionItemService auctionItemService;
 
+    @Autowired
+    private WebSocketNotificationService webSocketNotificationService;
+
     // Place a new bid
     @Transactional
     public Bid placeBid(String auctionId, String bidderId, BigDecimal bidAmount) {
@@ -56,6 +59,9 @@ public class BidService {
         // Update status of previous bids
         updatePreviousBidsStatus(auction, bidAmount);
 
+        // Notify subscribers about the new bid
+        webSocketNotificationService.notifyNewBid(auctionId, savedBid);
+
         return savedBid;
     }
 
@@ -79,7 +85,7 @@ public class BidService {
         Optional<AuctionItem> auctionOpt = auctionItemService.getAuctionItemById(auctionId);
         if (auctionOpt.isPresent()) {
             Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "timestamp"));
-            return bidRepository.findRecentBidsByAuctionItem(auctionOpt.get(), pageable);
+            return bidRepository.findByAuctionItem(auctionOpt.get(), pageable).getContent();
         }
         throw new RuntimeException("Auction not found with id: " + auctionId);
     }

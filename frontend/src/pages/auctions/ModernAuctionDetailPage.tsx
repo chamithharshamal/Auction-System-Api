@@ -43,6 +43,7 @@ import { auctionService } from '../../services/auctionService';
 import { bidService } from '../../services/bidService';
 import { webSocketService } from '../../services/webSocketService';
 import { useAuth } from '../../contexts/AuthContext';
+import { PaymentModal } from '../../components/payment/PaymentModal';
 
 const ModernAuctionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,6 +53,8 @@ const ModernAuctionDetailPage: React.FC = () => {
   const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
   const [bidAmount, setBidAmount] = useState('');
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -85,6 +88,13 @@ const ModernAuctionDetailPage: React.FC = () => {
       };
     }
   }, [id]);
+
+  const handlePaymentSuccess = () => {
+    setSuccessMessage('Payment processed successfully! This item is now marked as paid.');
+    if (auction) {
+      setAuction({ ...auction, paid: true });
+    }
+  };
 
   const loadAuctionDetails = async () => {
     try {
@@ -231,6 +241,21 @@ const ModernAuctionDetailPage: React.FC = () => {
           sx={{ mb: 3, borderRadius: 3 }}
         >
           {success}
+        </Alert>
+      )}
+
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 3, borderRadius: 3 }}>
+          {successMessage}
+        </Alert>
+      )}
+
+      {auction.paid && (
+        <Alert severity="success" sx={{ mb: 3, borderRadius: 3, display: 'flex', alignItems: 'center' }}>
+          <Typography variant="subtitle1" component="span" sx={{ fontWeight: 700, mr: 1 }}>
+            ✓ PAID
+          </Typography>
+          This item has been paid for.
         </Alert>
       )}
 
@@ -491,6 +516,29 @@ const ModernAuctionDetailPage: React.FC = () => {
                 >
                   This auction has ended
                 </Alert>
+              )}
+
+              {auction.status === 'ENDED' && !auction.paid && user?.id === auction.highestBidder?.id && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="large"
+                  fullWidth
+                  sx={{
+                    mt: 3,
+                    py: 2,
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    borderRadius: 3,
+                    boxShadow: '0 6px 16px rgba(156, 39, 176, 0.3)',
+                    '&:hover': {
+                      boxShadow: '0 8px 24px rgba(156, 39, 176, 0.4)',
+                    },
+                  }}
+                  onClick={() => setPaymentModalOpen(true)}
+                >
+                  Pay Now ({formatPrice(auction.currentPrice)})
+                </Button>
               )}
             </CardContent>
           </Card>
@@ -832,6 +880,16 @@ const ModernAuctionDetailPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {auction && (
+        <PaymentModal
+          open={paymentModalOpen}
+          onClose={() => setPaymentModalOpen(false)}
+          auctionId={auction.id}
+          amount={auction.currentPrice}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
     </Container>
   );
 };
