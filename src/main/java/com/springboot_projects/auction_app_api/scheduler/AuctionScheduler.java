@@ -34,6 +34,28 @@ public class AuctionScheduler {
     private EmailService emailService;
 
     @Scheduled(fixedRate = 60000) // Run every minute
+    public void startScheduledAuctions() {
+        logger.info("Checking for pending auctions to start...");
+
+        List<AuctionItem> pendingAuctions = auctionItemRepository.findByStartDateBeforeAndStatus(
+                LocalDateTime.now(),
+                AuctionItem.AuctionStatus.DRAFT);
+
+        if (!pendingAuctions.isEmpty()) {
+            logger.info("Found {} pending auctions. Starting them now.", pendingAuctions.size());
+
+            for (AuctionItem auction : pendingAuctions) {
+                try {
+                    auctionItemService.startAuction(auction.getId());
+                    logger.info("Started auction: {}", auction.getId());
+                } catch (Exception e) {
+                    logger.error("Failed to auto-start auction: {}", auction.getId(), e);
+                }
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 60000) // Run every minute
     public void closeExpiredAuctions() {
         logger.info("Checking for expired auctions...");
 

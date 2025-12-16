@@ -86,4 +86,7 @@ public interface AuctionItemRepository extends MongoRepository<AuctionItem, Stri
 
     // Find active auctions that have expired
     List<AuctionItem> findByEndDateBeforeAndStatus(LocalDateTime now, AuctionItem.AuctionStatus status);
+
+    // Find pending auctions that should start
+    List<AuctionItem> findByStartDateBeforeAndStatus(LocalDateTime now, AuctionItem.AuctionStatus status);
 }
