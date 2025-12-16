@@ -12,14 +12,12 @@ import {
   MenuItem,
   Card,
   CardContent,
-  CardActions,
   IconButton,
   Divider,
   Alert,
   Grid,
 } from '@mui/material';
 import {
-  Add,
   Delete,
   Gavel,
   ArrowBack,
@@ -33,6 +31,7 @@ import type { AuctionItem, UpdateAuctionRequest } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ImageUpload from '../../components/common/ImageUpload';
 
 const EditAuctionPage: React.FC = () => {
   const navigate = useNavigate();
@@ -116,26 +115,21 @@ const EditAuctionPage: React.FC = () => {
 
   const handleDateChange = (name: string, value: Date | null) => {
     if (value) {
+      // Create a date object in local time
+      // We want to send YYYY-MM-DDTHH:mm:ss without timezone conversion
+      const offset = value.getTimezoneOffset() * 60000;
+      const localDate = new Date(value.getTime() - offset);
+      const localIsoString = localDate.toISOString().slice(0, 19); // Remove milliseconds and 'Z'
+
       setFormData(prev => ({
         ...prev,
-        [name]: value.toISOString(),
+        [name]: localIsoString,
       }));
     }
   };
 
-  const handleImageUrlAdd = () => {
-    setFormData(prev => ({
-      ...prev,
-      imageUrls: [...prev.imageUrls, ''],
-    }));
-  };
+  /* handleImageUrlAdd and handleImageUrlChange removed as they are replaced by ImageUpload */
 
-  const handleImageUrlChange = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      imageUrls: prev.imageUrls.map((url, i) => i === index ? value : url),
-    }));
-  };
 
   const handleImageUrlRemove = (index: number) => {
     if (formData.imageUrls.length > 1) {
@@ -379,42 +373,65 @@ const EditAuctionPage: React.FC = () => {
 
               <Grid size={{ xs: 12 }}>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Add image URLs to showcase your item. You can add multiple images.
+                  Upload images to showcase your item. You can add multiple images.
                 </Typography>
 
                 {formData.imageUrls.map((url, index) => (
-                  <Card key={index} sx={{ mb: 2 }}>
-                    <CardContent>
-                      <TextField
-                        fullWidth
-                        disabled={auction.totalBids > 0}
-                        label={`Image URL ${index + 1}`}
-                        value={url}
-                        onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                      />
+                  <Card key={index} variant="outlined" sx={{ mb: 2 }}>
+                    <CardContent sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box
+                          component="img"
+                          src={url}
+                          alt={`Image ${index + 1}`}
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            objectFit: 'cover',
+                            borderRadius: 1,
+                            bgcolor: 'grey.100'
+                          }}
+                          onError={(e: any) => {
+                            e.target.src = 'https://via.placeholder.com/100?text=Error';
+                          }}
+                        />
+                        <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+                          <Typography variant="body2" noWrap title={url}>
+                            {url.split('/').pop() || url}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            uploaded
+                          </Typography>
+                        </Box>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleImageUrlRemove(index)}
+                          disabled={formData.imageUrls.length <= 1 || auction.totalBids > 0}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Box>
                     </CardContent>
-                    <CardActions>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleImageUrlRemove(index)}
-                        disabled={formData.imageUrls.length <= 1 || auction.totalBids > 0}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </CardActions>
                   </Card>
                 ))}
 
-                <Button
-                  variant="outlined"
-                  startIcon={<Add />}
-                  onClick={handleImageUrlAdd}
-                  sx={{ mb: 2 }}
-                  disabled={auction.totalBids > 0}
-                >
-                  Add Image URL
-                </Button>
+                {formData.imageUrls.length < 5 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="caption" display="block" sx={{ mb: 1, color: 'text.secondary' }}>
+                      Add up to 5 images. Max size 5MB each.
+                    </Typography>
+                    <ImageUpload
+                      disabled={auction.totalBids > 0}
+                      onUpload={(url: string) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          imageUrls: [...prev.imageUrls, url]
+                        }));
+                      }}
+                      onError={(msg: string) => setError(msg)}
+                    />
+                  </Box>
+                )}
               </Grid>
 
               {/* Submit */}

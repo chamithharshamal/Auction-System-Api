@@ -12,7 +12,6 @@ import {
   MenuItem,
   Card,
   CardContent,
-  CardActions,
   IconButton,
   InputAdornment,
   Grid,
@@ -21,12 +20,10 @@ import {
   StepLabel,
 } from '@mui/material';
 import {
-  Add,
   Delete,
   Gavel,
   NavigateNext,
   NavigateBefore,
-  Image as ImageIcon,
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -36,6 +33,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import type { CreateAuctionRequest } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import ImageUpload from '../../components/common/ImageUpload';
 
 const steps = ['Details', 'Pricing', 'Schedule', 'Images'];
 
@@ -89,26 +87,20 @@ const CreateAuctionPage: React.FC = () => {
 
   const handleDateChange = (name: string, value: Date | null) => {
     if (value) {
+      // Create a date object in local time
+      // We want to send YYYY-MM-DDTHH:mm:ss without timezone conversion
+      const offset = value.getTimezoneOffset() * 60000;
+      const localDate = new Date(value.getTime() - offset);
+      const localIsoString = localDate.toISOString().slice(0, 19); // Remove milliseconds and 'Z'
+
       setFormData(prev => ({
         ...prev,
-        [name]: value.toISOString(),
+        [name]: localIsoString,
       }));
     }
   };
 
-  const handleImageUrlAdd = () => {
-    setFormData(prev => ({
-      ...prev,
-      imageUrls: [...prev.imageUrls, ''],
-    }));
-  };
-
-  const handleImageUrlChange = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      imageUrls: prev.imageUrls.map((url, i) => i === index ? value : url),
-    }));
-  };
+  /* handleImageUrlAdd and handleImageUrlChange removed as they are replaced by ImageUpload */
 
   const handleImageUrlRemove = (index: number) => {
     setFormData(prev => ({
@@ -343,60 +335,64 @@ const CreateAuctionPage: React.FC = () => {
           <Grid container spacing={3}>
             <Grid size={12}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Add image URLs to showcase your item.
+                Upload images to showcase your item. You can add multiple images.
               </Typography>
 
               {formData.imageUrls.map((url, index) => (
                 <Card key={index} variant="outlined" sx={{ mb: 2, position: 'relative' }}>
-                  <CardContent>
-                    <TextField
-                      fullWidth
-                      label={`Image URL ${index + 1}`}
-                      value={url}
-                      onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                      placeholder="https://example.com/image.jpg"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <ImageIcon color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                    {url && (
-                      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                        <img
-                          src={url}
-                          alt="Preview"
-                          style={{ maxHeight: 200, maxWidth: '100%', objectFit: 'contain' }}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=Invalid+URL';
-                          }}
-                        />
+                  <CardContent sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box
+                        component="img"
+                        src={url}
+                        alt={`Image ${index + 1}`}
+                        sx={{
+                          width: 100,
+                          height: 100,
+                          objectFit: 'cover',
+                          borderRadius: 1,
+                          bgcolor: 'grey.100'
+                        }}
+                        onError={(e: any) => {
+                          e.target.src = 'https://via.placeholder.com/100?text=Error';
+                        }}
+                      />
+                      <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+                        <Typography variant="body2" noWrap title={url}>
+                          {url.split('/').pop() || url}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          uploaded
+                        </Typography>
                       </Box>
-                    )}
+                      <IconButton
+                        color="error"
+                        onClick={() => handleImageUrlRemove(index)}
+                        aria-label="remove image"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Box>
                   </CardContent>
-                  <CardActions sx={{ justifyContent: 'flex-end' }}>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleImageUrlRemove(index)}
-                      aria-label="remove image"
-                    >
-                      <Delete />
-                    </IconButton>
-                  </CardActions>
                 </Card>
               ))}
 
-              <Button
-                variant="outlined"
-                startIcon={<Add />}
-                onClick={handleImageUrlAdd}
-                fullWidth
-                sx={{ mt: 1, borderStyle: 'dashed' }}
-              >
-                Add Another Image
-              </Button>
+              {formData.imageUrls.length < 5 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" display="block" sx={{ mb: 1, color: 'text.secondary' }}>
+                    Add up to 5 images. Max size 5MB each.
+                  </Typography>
+                  <ImageUpload
+                    onUpload={(url: string) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        imageUrls: [...prev.imageUrls, url]
+                      }));
+                    }}
+                    onError={(msg: string) => setError(msg)}
+                  />
+                </Box>
+              )}
             </Grid>
           </Grid>
         );

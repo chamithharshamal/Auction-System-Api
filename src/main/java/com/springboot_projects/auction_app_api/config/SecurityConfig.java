@@ -71,6 +71,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/bids/auction/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bids/auction/*/recent").permitAll()
 
+                        // Files - Public access for viewing images
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
+
                         // User management - Admin access for listing, authenticated for individual
                         // access
                         .requestMatchers("GET", "/api/users").hasRole("ADMIN")
@@ -89,14 +92,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/auctions/ending-soon").permitAll()
                         .requestMatchers("/api/auctions/{id}").permitAll() // View specific auction
 
-                        // Auction management - Seller only
-                        // Auction management - Seller only
-                        .requestMatchers("POST", "/api/auctions").hasRole("SELLER")
-                        .requestMatchers("PUT", "/api/auctions/*").hasRole("SELLER")
-                        .requestMatchers("PATCH", "/api/auctions/*/start").hasRole("SELLER")
-                        .requestMatchers("PATCH", "/api/auctions/*/end").hasRole("SELLER")
-                        .requestMatchers("PATCH", "/api/auctions/*/cancel").hasRole("SELLER")
-                        .requestMatchers("DELETE", "/api/auctions/*").hasRole("SELLER")
+                        // Auction management - Seller or Bidder (Allowing Bidders to become Sellers)
+                        .requestMatchers("POST", "/api/auctions").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers("PUT", "/api/auctions/*").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers("PATCH", "/api/auctions/*/start").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers("PATCH", "/api/auctions/*/end").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers("PATCH", "/api/auctions/*/cancel").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers("DELETE", "/api/auctions/*").hasAnyRole("SELLER", "BIDDER")
 
                         // Bidding - Bidder only
                         .requestMatchers("POST", "/api/bids/**").hasRole("BIDDER")

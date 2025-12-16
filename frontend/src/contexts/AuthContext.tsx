@@ -6,6 +6,7 @@ import { authService } from '../services/authService';
 
 interface AuthState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -37,6 +38,7 @@ type AuthAction =
 
 const initialState: AuthState = {
   user: null,
+  token: localStorage.getItem('token'),
   isAuthenticated: false,
   isLoading: true,
   error: null,
@@ -54,6 +56,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       return {
         ...state,
         user: action.payload.user,
+        token: action.payload.token,
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -62,6 +65,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       return {
         ...state,
         user: null,
+        token: null,
         isAuthenticated: false,
         isLoading: false,
         error: action.payload,
@@ -70,6 +74,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       return {
         ...state,
         user: null,
+        token: null,
         isAuthenticated: false,
         isLoading: false,
         error: null,
