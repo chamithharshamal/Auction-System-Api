@@ -227,6 +227,12 @@ const EditAuctionPage: React.FC = () => {
         )}
 
         <Paper sx={{ p: 4 }}>
+          {auction.totalBids > 0 && (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              This auction cannot be edited because bids have already been placed.
+            </Alert>
+          )}
+
           <Box component="form" onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               {/* Basic Information */}
@@ -241,6 +247,7 @@ const EditAuctionPage: React.FC = () => {
                 <TextField
                   required
                   fullWidth
+                  disabled={auction.totalBids > 0}
                   label="Auction Title"
                   name="title"
                   value={formData.title}
@@ -255,6 +262,7 @@ const EditAuctionPage: React.FC = () => {
                   fullWidth
                   multiline
                   rows={4}
+                  disabled={auction.totalBids > 0}
                   label="Description"
                   name="description"
                   value={formData.description}
@@ -269,6 +277,7 @@ const EditAuctionPage: React.FC = () => {
                   <Select
                     value={formData.category}
                     label="Category"
+                    disabled={auction.totalBids > 0}
                     onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   >
                     {categories.map((category) => (
@@ -309,6 +318,7 @@ const EditAuctionPage: React.FC = () => {
                 <TextField
                   fullWidth
                   type="number"
+                  disabled={auction.totalBids > 0}
                   label="Reserve Price (Optional)"
                   name="reservePrice"
                   value={formData.reservePrice}
@@ -317,7 +327,7 @@ const EditAuctionPage: React.FC = () => {
                   InputProps={{
                     startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
                   }}
-                  helperText="Minimum price you're willing to accept"
+                  helperText={auction.totalBids > 0 ? "Cannot edit with bids placed" : "Minimum price you're willing to accept"}
                 />
               </Grid>
 
@@ -334,6 +344,7 @@ const EditAuctionPage: React.FC = () => {
                   label="Start Date & Time"
                   value={formData.startDate ? new Date(formData.startDate) : null}
                   onChange={(newValue) => handleDateChange('startDate', newValue)}
+                  disabled={auction.totalBids > 0}
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -348,6 +359,7 @@ const EditAuctionPage: React.FC = () => {
                   label="End Date & Time"
                   value={formData.endDate ? new Date(formData.endDate) : null}
                   onChange={(newValue) => handleDateChange('endDate', newValue)}
+                  disabled={auction.totalBids > 0}
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -375,6 +387,7 @@ const EditAuctionPage: React.FC = () => {
                     <CardContent>
                       <TextField
                         fullWidth
+                        disabled={auction.totalBids > 0}
                         label={`Image URL ${index + 1}`}
                         value={url}
                         onChange={(e) => handleImageUrlChange(index, e.target.value)}
@@ -385,7 +398,7 @@ const EditAuctionPage: React.FC = () => {
                       <IconButton
                         color="error"
                         onClick={() => handleImageUrlRemove(index)}
-                        disabled={formData.imageUrls.length <= 1}
+                        disabled={formData.imageUrls.length <= 1 || auction.totalBids > 0}
                       >
                         <Delete />
                       </IconButton>
@@ -398,6 +411,7 @@ const EditAuctionPage: React.FC = () => {
                   startIcon={<Add />}
                   onClick={handleImageUrlAdd}
                   sx={{ mb: 2 }}
+                  disabled={auction.totalBids > 0}
                 >
                   Add Image URL
                 </Button>
@@ -418,7 +432,7 @@ const EditAuctionPage: React.FC = () => {
                     type="submit"
                     variant="contained"
                     startIcon={<Gavel />}
-                    disabled={saving}
+                    disabled={saving || auction.totalBids > 0}
                     sx={{ minWidth: 150 }}
                   >
                     {saving ? 'Saving...' : 'Save Changes'}

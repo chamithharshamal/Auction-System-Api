@@ -21,9 +21,9 @@ import MyBidsPage from './pages/user/MyBidsPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route component
-const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({ 
-  children, 
-  requiredRole 
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({
+  children,
+  requiredRole
 }) => {
   const { isAuthenticated, hasRole, isLoading } = useAuth();
 
@@ -57,57 +57,57 @@ const AppRoutes: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<ModernHomePage />} />
-          <Route 
-            path="/login" 
+          <Route
+            path="/login"
             element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}  // Changed from ModernLoginPage
           />
-          <Route 
-            path="/register" 
-            element={isAuthenticated ? <Navigate to="/" replace /> : <ModernRegisterPage />} 
+          <Route
+            path="/register"
+            element={isAuthenticated ? <Navigate to="/" replace /> : <ModernRegisterPage />}
           />
           <Route path="/auctions" element={<ModernAuctionListPage />} />
           <Route path="/auctions/:id" element={<ModernAuctionDetailPage />} />
 
           {/* Protected Routes */}
-          <Route 
-            path="/profile" 
+          <Route
+            path="/profile"
             element={
               <ProtectedRoute>
                 <UserProfilePage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/my-auctions" 
+          <Route
+            path="/my-auctions"
             element={
               <ProtectedRoute requiredRole="SELLER">
                 <MyAuctionsPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/my-bids" 
+          <Route
+            path="/my-bids"
             element={
               <ProtectedRoute>
                 <MyBidsPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/create-auction" 
+          <Route
+            path="/create-auction"
             element={
               <ProtectedRoute requiredRole="SELLER">
                 <CreateAuctionPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/edit-auction/:id" 
+          <Route
+            path="/edit-auction/:id"
             element={
               <ProtectedRoute requiredRole="SELLER">
                 <EditAuctionPage />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Catch all route */}
@@ -118,16 +118,28 @@ const AppRoutes: React.FC = () => {
   );
 };
 
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+
+// ... existing imports
+
 const App: React.FC = () => {
+  const initialOptions = {
+    clientId: "test", // REPLACE WITH YOUR REAL CLIENT ID
+    currency: "USD",
+    intent: "capture",
+  };
+
   return (
     <ThemeProvider theme={modernTheme}>
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Router>
-          <AuthProvider>
-            <AppRoutes />
-          </AuthProvider>
-        </Router>
+        <PayPalScriptProvider options={initialOptions}>
+          <Router>
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
+          </Router>
+        </PayPalScriptProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

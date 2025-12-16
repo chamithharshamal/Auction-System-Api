@@ -3,16 +3,14 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions,
-    Button,
-    TextField,
     Box,
     Typography,
-    Grid,
-    CircularProgress,
     Alert,
+    IconButton
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import api from '../../services/api';
+import { PayPalButtons } from "@paypal/react-paypal-js";
 
 interface PaymentModalProps {
     open: boolean;
@@ -29,97 +27,79 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     amount,
     onPaymentSuccess,
 }) => {
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [formData, setFormData] = useState({
-        cardNumber: '',
-        expiryDate: '',
-        cvv: '',
-    });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
-
-    const handlePay = async () => {
-        setLoading(true);
-        setError(null);
+    const handleApprove = async (data: any, actions: any) => {
         try {
+            await actions.order.capture();
+            // Call backend to verify and save payment
             await api.post('/payment/process', {
                 auctionId,
-                ...formData
+                paymentMethod: 'PAYPAL',
+                paypalOrderId: data.orderID
             });
             onPaymentSuccess();
             onClose();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Payment failed');
-        } finally {
-            setLoading(false);
+            console.error("Payment Error: ", err);
+            setError("Payment failed. Please try again.");
         }
     };
 
     return (
-        <Dialog open={open} onClose={loading ? undefined : onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Secure Checkout</DialogTitle>
-            <DialogContent>
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="h6" gutterBottom>
-                        Amount to Pay: ${amount}
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ m: 0, p: 2 }}>
+                Secure Checkout
+                <IconButton
+                    aria-label="close"
+                    onClick={onClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: (theme) => theme.palette.grey[500],
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+                <Box sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="h5" gutterBottom color="primary" fontWeight="bold">
+                        Total: ${amount.toFixed(2)}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary" paragraph>
+                        Complete your purchase securely with PayPal.
                     </Typography>
 
                     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-                    <Grid container spacing={2}>
-                        <Grid size={{ xs: 12 }}>
-                            <TextField
-                                fullWidth
-                                label="Card Number"
-                                name="cardNumber"
-                                value={formData.cardNumber}
-                                onChange={handleChange}
-                                placeholder="0000 0000 0000 0000"
-                            />
-                        </Grid>
-                        <Grid size={{ xs: 6 }}>
-                            <TextField
-                                fullWidth
-                                label="Expiry Date"
-                                name="expiryDate"
-                                value={formData.expiryDate}
-                                onChange={handleChange}
-                                placeholder="MM/YY"
-                            />
-                        </Grid>
-                        <Grid size={{ xs: 6 }}>
-                            <TextField
-                                fullWidth
-                                label="CVV"
-                                name="cvv"
-                                value={formData.cvv}
-                                onChange={handleChange}
-                                type="password"
-                            />
-                        </Grid>
-                    </Grid>
-
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-                        * This is a mock payment gateway. No real transaction will occur.
-                    </Typography>
+                    <Box sx={{ mt: 3, minHeight: 150 }}>
+                        <PayPalButtons
+                            style={{ layout: "vertical" }}
+                            createOrder={(_data, actions) => {
+                                return actions.order.create({
+                                    intent: "CAPTURE",
+                                    purchase_units: [
+                                        {
+                                            amount: {
+                                                currency_code: "USD",
+                                                value: amount.toString(),
+                                            },
+                                        },
+                                    ],
+                                });
+                            }}
+                            onApprove={handleApprove}
+                            onError={(err) => {
+                                console.error("PayPal Error:", err);
+                                setError("An error occurred with PayPal.");
+                            }}
+                        />
+                    </Box>
                 </Box>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose} disabled={loading}>Cancel</Button>
-                <Button
-                    onClick={handlePay}
-                    variant="contained"
-                    disabled={loading || !formData.cardNumber || !formData.expiryDate || !formData.cvv}
-                >
-                    {loading ? <CircularProgress size={24} /> : 'Pay Now'}
-                </Button>
-            </DialogActions>
         </Dialog>
     );
 };

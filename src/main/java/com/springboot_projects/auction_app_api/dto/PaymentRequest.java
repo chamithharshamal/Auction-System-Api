@@ -7,14 +7,13 @@ public class PaymentRequest {
     @NotBlank(message = "Auction ID is required")
     private String auctionId;
 
-    @NotBlank(message = "Card number is required")
     private String cardNumber;
-
-    @NotBlank(message = "Expiry date is required")
     private String expiryDate;
-
-    @NotBlank(message = "CVV is required")
     private String cvv;
+
+    // New fields for PayPal
+    private String paymentMethod; // "CARD" or "PAYPAL"
+    private String paypalOrderId;
 
     // Getters and Setters
     public String getAuctionId() {
@@ -47,5 +46,21 @@ public class PaymentRequest {
 
     public void setCvv(String cvv) {
         this.cvv = cvv;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaypalOrderId() {
+        return paypalOrderId;
+    }
+
+    public void setPaypalOrderId(String paypalOrderId) {
+        this.paypalOrderId = paypalOrderId;
     }
 }

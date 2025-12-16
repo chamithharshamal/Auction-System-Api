@@ -53,15 +53,28 @@ public class PaymentService {
             throw new RuntimeException("This auction has already been paid for");
         }
 
-        // 3. Mock Payment Processing (Simulate success)
-        String transactionId = "TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // 3. Determine Payment Method and Transaction ID
+        String transactionId;
+        String method = "CARD";
+
+        if ("PAYPAL".equalsIgnoreCase(request.getPaymentMethod())) {
+            method = "PAYPAL";
+            transactionId = request.getPaypalOrderId();
+            if (transactionId == null || transactionId.isEmpty()) {
+                throw new RuntimeException("PayPal Order ID is required for PayPal payments");
+            }
+            // In a real app, verify order details with PayPal API here
+        } else {
+            // Mock Card processing
+            transactionId = "TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
 
         // 4. Save Payment Record
         Payment payment = new Payment(
                 auction.getId(),
                 payer.getId(),
                 auction.getCurrentPrice(),
-                "CARD", // Mock method
+                method,
                 transactionId,
                 "SUCCESS");
         paymentRepository.save(payment);
