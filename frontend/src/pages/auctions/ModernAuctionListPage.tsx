@@ -28,7 +28,7 @@ import {
   useTheme,
   Stack,
   Divider,
-  SelectChangeEvent
+  type SelectChangeEvent
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -56,7 +56,7 @@ const ModernAuctionListPage: React.FC = () => {
   const [auctions, setAuctions] = useState<PaginatedResponse<AuctionItem> | null>(null);
   const [loading, setLoading] = useState(true);
   const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
-  
+
   // Filter States
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
@@ -64,9 +64,9 @@ const ModernAuctionListPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState<number[]>([0, 10000]);
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(
-      (searchParams.get('sortDir') as 'asc' | 'desc') || 'desc'
+    (searchParams.get('sortDir') as 'asc' | 'desc') || 'desc'
   );
-  
+
   // View States
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '0'));
@@ -74,8 +74,8 @@ const ModernAuctionListPage: React.FC = () => {
   const { user } = useAuth();
 
   const categories = [
-    'Electronics', 'Art & Collectibles', 'Jewelry', 'Vehicles', 
-    'Real Estate', 'Sports & Recreation', 'Books & Media', 
+    'Electronics', 'Art & Collectibles', 'Jewelry', 'Vehicles',
+    'Real Estate', 'Sports & Recreation', 'Books & Media',
     'Fashion', 'Home & Garden', 'Other'
   ];
 
@@ -115,7 +115,7 @@ const ModernAuctionListPage: React.FC = () => {
 
   const toggleWatchlist = async (auctionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) return; 
+    if (!user) return;
 
     const isWatched = watchlist.has(auctionId);
     try {
@@ -171,10 +171,10 @@ const ModernAuctionListPage: React.FC = () => {
   };
 
   const handleSortChange = (e: SelectChangeEvent) => {
-      const value = e.target.value;
-      const [field, dir] = value.split('-');
-      setSortBy(field);
-      setSortDir(dir as 'asc' | 'desc');
+    const value = e.target.value;
+    const [field, dir] = value.split('-');
+    setSortBy(field);
+    setSortDir(dir as 'asc' | 'desc');
   };
 
   const formatPrice = (price: number) => {
@@ -182,21 +182,21 @@ const ModernAuctionListPage: React.FC = () => {
   };
 
   const getTimeRemaining = (endDate: string) => {
-      const now = new Date().getTime();
-      const end = new Date(endDate).getTime();
-      const diff = end - now;
-  
-      if (diff <= 0) return 'Ended';
-  
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  
-      if (days > 0) return `${days}d ${hours}h left`;
-      if (hours > 0) return `${hours}h ${minutes}m left`;
-      return `${minutes}m left`;
-    };
-  
+    const now = new Date().getTime();
+    const end = new Date(endDate).getTime();
+    const diff = end - now;
+
+    if (diff <= 0) return 'Ended';
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 0) return `${hours}h ${minutes}m left`;
+    return `${minutes}m left`;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE': return 'success';
@@ -252,22 +252,22 @@ const ModernAuctionListPage: React.FC = () => {
         <Box>
           <Typography variant="subtitle2" gutterBottom fontWeight={600}>Status</Typography>
           <FormControl fullWidth size="small">
-          <Select
-            value={selectedStatus}
-            displayEmpty
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            renderValue={(selected) => {
+            <Select
+              value={selectedStatus}
+              displayEmpty
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              renderValue={(selected) => {
                 if (selected === '') {
                   return <em>All Status</em>;
                 }
                 return selected;
               }}
-          >
-            <MenuItem value="">All Status</MenuItem>
-            {statusOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-            ))}
-          </Select>
+            >
+              <MenuItem value="">All Status</MenuItem>
+              {statusOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+              ))}
+            </Select>
           </FormControl>
         </Box>
 
@@ -300,9 +300,9 @@ const ModernAuctionListPage: React.FC = () => {
       {/* Mobile Filter Toggle */}
       {isMobile && (
         <Box mb={2}>
-          <Button 
-            variant="outlined" 
-            startIcon={<FilterAlt />} 
+          <Button
+            variant="outlined"
+            startIcon={<FilterAlt />}
             onClick={() => setMobileOpen(true)}
             fullWidth
           >
@@ -315,9 +315,9 @@ const ModernAuctionListPage: React.FC = () => {
         {/* Sidebar (Desktop) */}
         {!isMobile && (
           <Grid size={{ md: 3, lg: 2.5 }}>
-            <Paper 
-              elevation={0} 
-              sx={{ 
+            <Paper
+              elevation={0}
+              sx={{
                 border: '1px solid',
                 borderColor: 'grey.200',
                 borderRadius: 3,
@@ -337,10 +337,10 @@ const ModernAuctionListPage: React.FC = () => {
           onClose={() => setMobileOpen(false)}
           sx={{ '& .MuiDrawer-paper': { width: 280, p: 2 } }}
         >
-            <Box display="flex" justifyContent="flex-end">
-                <IconButton onClick={() => setMobileOpen(false)}><Close /></IconButton>
-            </Box>
-            <FilterContent />
+          <Box display="flex" justifyContent="flex-end">
+            <IconButton onClick={() => setMobileOpen(false)}><Close /></IconButton>
+          </Box>
+          <FilterContent />
         </Drawer>
 
         {/* Main Content */}
@@ -352,43 +352,43 @@ const ModernAuctionListPage: React.FC = () => {
             </Typography>
 
             <Box display="flex" gap={2} alignItems="center">
-                <FormControl size="small" sx={{ minWidth: 150 }}>
-                    <InputLabel id="sort-select-label">Sort</InputLabel>
-                    <Select
-                        labelId="sort-select-label"
-                        value={`${sortBy}-${sortDir}`}
-                        label="Sort"
-                        onChange={handleSortChange}
-                        variant="outlined"
-                    >
-                        {sortOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                 <ToggleButtonGroup
-                    value={viewMode}
-                    exclusive
-                    onChange={(_e, newMode) => newMode && setViewMode(newMode)}
-                    size="small"
-                  >
-                    <ToggleButton value="grid"><ViewModule /></ToggleButton>
-                    <ToggleButton value="list"><ViewList /></ToggleButton>
-                  </ToggleButtonGroup>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel id="sort-select-label">Sort</InputLabel>
+                <Select
+                  labelId="sort-select-label"
+                  value={`${sortBy}-${sortDir}`}
+                  label="Sort"
+                  onChange={handleSortChange}
+                  variant="outlined"
+                >
+                  {sortOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_e, newMode) => newMode && setViewMode(newMode)}
+                size="small"
+              >
+                <ToggleButton value="grid"><ViewModule /></ToggleButton>
+                <ToggleButton value="list"><ViewList /></ToggleButton>
+              </ToggleButtonGroup>
             </Box>
           </Box>
 
           {/* Listings */}
           {loading ? (
-             <Grid container spacing={3}>
-               {[1, 2, 3, 4, 5, 6].map((n) => (
-                 <Grid size={{ xs: 12, sm: viewMode === 'list' ? 12 : 6, lg: viewMode === 'list' ? 12 : 4 }} key={n}>
-                   <Skeleton variant="rounded" height={300} />
-                 </Grid>
-               ))}
-             </Grid>
+            <Grid container spacing={3}>
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <Grid size={{ xs: 12, sm: viewMode === 'list' ? 12 : 6, lg: viewMode === 'list' ? 12 : 4 }} key={n}>
+                  <Skeleton variant="rounded" height={300} />
+                </Grid>
+              ))}
+            </Grid>
           ) : auctions && auctions.content.length > 0 ? (
             <>
               <Grid container spacing={3}>
@@ -407,46 +407,46 @@ const ModernAuctionListPage: React.FC = () => {
                     >
                       <Box sx={{ position: 'relative', width: viewMode === 'list' ? 250 : '100%' }}>
                         <CardMedia
-                           component="img"
-                           height={viewMode === 'list' ? '100%' : 220}
-                           image={auction.imageUrls?.[0]}
-                           sx={{ objectFit: 'cover' }}
+                          component="img"
+                          height={viewMode === 'list' ? '100%' : 220}
+                          image={auction.imageUrls?.[0]}
+                          sx={{ objectFit: 'cover' }}
                         />
                         <IconButton
                           onClick={(e) => toggleWatchlist(auction.id, e)}
-                          sx={{ 
-                            position: 'absolute', 
-                            top: 8, 
-                            right: 8, 
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
                             bgcolor: 'rgba(255,255,255,0.9)',
                             '&:hover': { bgcolor: 'white' }
                           }}
                         >
                           {watchlist.has(auction.id) ? <Favorite color="error" /> : <FavoriteBorder />}
                         </IconButton>
-                        <Chip 
-                            label={auction.status} 
-                            color={getStatusColor(auction.status) as any}
-                            size="small"
-                            sx={{ position: 'absolute', top: 8, left: 8, fontWeight: 700 }}
+                        <Chip
+                          label={auction.status}
+                          color={getStatusColor(auction.status) as any}
+                          size="small"
+                          sx={{ position: 'absolute', top: 8, left: 8, fontWeight: 700 }}
                         />
                       </Box>
-                      
+
                       <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
                         <Typography variant="h6" fontWeight={700} noWrap gutterBottom>
                           {auction.title}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" paragraph sx={{ 
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
+                        <Typography variant="body2" color="text.secondary" paragraph sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
                         }}>
                           {auction.description}
                         </Typography>
-                        
+
                         <Divider sx={{ my: 1.5 }} />
-                        
+
                         <Box display="flex" justifyContent="space-between" alignItems="center">
                           <Box>
                             <Typography variant="caption" color="text.secondary">Current Price</Typography>
@@ -455,18 +455,18 @@ const ModernAuctionListPage: React.FC = () => {
                             </Typography>
                           </Box>
                           <Box textAlign="right">
-                             <Typography variant="caption" color="text.secondary">Ends In</Typography>
-                             <Typography variant="subtitle2" fontWeight={600}>
-                                {getTimeRemaining(auction.endDate)}
-                             </Typography>
+                            <Typography variant="caption" color="text.secondary">Ends In</Typography>
+                            <Typography variant="subtitle2" fontWeight={600}>
+                              {getTimeRemaining(auction.endDate)}
+                            </Typography>
                           </Box>
                         </Box>
                       </CardContent>
-                      
+
                       <CardActions sx={{ p: 2, pt: 0 }}>
-                         <Button fullWidth variant="contained" size="small" sx={{ borderRadius: 2 }}>
-                            Bid Now
-                         </Button>
+                        <Button fullWidth variant="contained" size="small" sx={{ borderRadius: 2 }}>
+                          Bid Now
+                        </Button>
                       </CardActions>
                     </Card>
                   </Grid>
@@ -475,10 +475,10 @@ const ModernAuctionListPage: React.FC = () => {
 
               {auctions.totalPages > 1 && (
                 <Box display="flex" justifyContent="center" mt={4}>
-                  <Pagination 
-                    count={auctions.totalPages} 
-                    page={page + 1} 
-                    onChange={(_e, v) => setPage(v - 1)} 
+                  <Pagination
+                    count={auctions.totalPages}
+                    page={page + 1}
+                    onChange={(_e, v) => setPage(v - 1)}
                     color="primary"
                     shape="rounded"
                   />
@@ -487,8 +487,8 @@ const ModernAuctionListPage: React.FC = () => {
             </>
           ) : (
             <Box textAlign="center" py={10}>
-                <Typography variant="h5" color="text.secondary" gutterBottom>No auctions found</Typography>
-                <Button variant="outlined" onClick={handleClearFilters}>Clear Filters</Button>
+              <Typography variant="h5" color="text.secondary" gutterBottom>No auctions found</Typography>
+              <Button variant="outlined" onClick={handleClearFilters}>Clear Filters</Button>
             </Box>
           )}
         </Grid>
