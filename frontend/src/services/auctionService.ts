@@ -1,9 +1,9 @@
 import api from './api';
-import type { 
-  ApiResponse, 
-  AuctionItem, 
-  CreateAuctionRequest, 
-  UpdateAuctionRequest, 
+import type {
+  ApiResponse,
+  AuctionItem,
+  CreateAuctionRequest,
+  UpdateAuctionRequest,
   PaginatedResponse
 } from '../types/api';
 
@@ -12,6 +12,35 @@ export const auctionService = {
   async getAllAuctions(page = 0, size = 10, sortBy = 'createdAt', sortDir = 'desc') {
     const response = await api.get<ApiResponse<PaginatedResponse<AuctionItem>>>(
       `/auctions?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
+    );
+    return response.data.data;
+  },
+
+  // Filter auctions
+  async filterAuctions(filters: {
+    search?: string;
+    category?: string;
+    status?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
+    if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
+    params.append('page', (filters.page || 0).toString());
+    params.append('size', (filters.size || 10).toString());
+    params.append('sortBy', filters.sortBy || 'createdAt');
+    params.append('sortDir', filters.sortDir || 'desc');
+
+    const response = await api.get<ApiResponse<PaginatedResponse<AuctionItem>>>(
+      `/auctions/filter?${params.toString()}`
     );
     return response.data.data;
   },

@@ -28,13 +28,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auctions")
 @CrossOrigin(origins = "*")
 public class AuctionItemController {
-    
+
     @Autowired
     private AuctionItemService auctionItemService;
-    
+
     @Autowired
     private UserService userService;
-    
+
     // Create new auction
     @PostMapping
     public ResponseEntity<ApiResponse<AuctionItemDto>> createAuction(@Valid @RequestBody CreateAuctionRequest request) {
@@ -42,7 +42,7 @@ public class AuctionItemController {
         if (!seller.isPresent()) {
             throw new UserNotFoundException("Seller not found with ID: " + request.getSellerId());
         }
-        
+
         AuctionItem auctionItem = new AuctionItem();
         auctionItem.setTitle(request.getTitle());
         auctionItem.setDescription(request.getDescription());
@@ -53,14 +53,14 @@ public class AuctionItemController {
         auctionItem.setStartDate(request.getStartDate());
         auctionItem.setEndDate(request.getEndDate());
         auctionItem.setSeller(seller.get());
-        
+
         AuctionItem createdAuction = auctionItemService.createAuctionItem(auctionItem);
         AuctionItemDto auctionDto = new AuctionItemDto(createdAuction);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Auction created successfully", auctionDto));
     }
-    
+
     // Get auction by ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<AuctionItemDto>> getAuctionById(@PathVariable String id) {
@@ -72,12 +72,12 @@ public class AuctionItemController {
             throw new AuctionNotFoundException("Auction not found with ID: " + id);
         }
     }
-    
+
     // Update auction
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
-    public ResponseEntity<ApiResponse<AuctionItemDto>> updateAuction(@PathVariable String id, 
-                                                                    @Valid @RequestBody UpdateAuctionRequest request) {
+    public ResponseEntity<ApiResponse<AuctionItemDto>> updateAuction(@PathVariable String id,
+            @Valid @RequestBody UpdateAuctionRequest request) {
         AuctionItem updateData = new AuctionItem();
         updateData.setTitle(request.getTitle());
         updateData.setDescription(request.getDescription());
@@ -86,13 +86,13 @@ public class AuctionItemController {
         updateData.setReservePrice(request.getReservePrice());
         updateData.setStartDate(request.getStartDate());
         updateData.setEndDate(request.getEndDate());
-        
+
         AuctionItem updatedAuction = auctionItemService.updateAuctionItem(id, updateData);
         AuctionItemDto auctionDto = new AuctionItemDto(updatedAuction);
-        
+
         return ResponseEntity.ok(ApiResponse.success("Auction updated successfully", auctionDto));
     }
-    
+
     // Get all auctions with pagination
     @GetMapping
     public ResponseEntity<ApiResponse<Page<AuctionItemDto>>> getAllAuctions(
@@ -100,16 +100,15 @@ public class AuctionItemController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<AuctionItem> auctions = auctionItemService.getAllAuctions(pageable);
         Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Get active auctions
     @GetMapping("/active")
     public ResponseEntity<ApiResponse<Page<AuctionItemDto>>> getActiveAuctions(
@@ -118,10 +117,10 @@ public class AuctionItemController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("endDate").ascending());
         Page<AuctionItem> auctions = auctionItemService.getActiveAuctions(pageable);
         Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Get auctions ending soon
     @GetMapping("/ending-soon")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> getAuctionsEndingSoon() {
@@ -129,10 +128,10 @@ public class AuctionItemController {
         List<AuctionItemDto> auctionDtos = auctions.stream()
                 .map(AuctionItemDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Get auctions by seller
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<ApiResponse<Page<AuctionItemDto>>> getAuctionsBySeller(
@@ -143,14 +142,14 @@ public class AuctionItemController {
         if (!seller.isPresent()) {
             throw new UserNotFoundException("Seller not found with ID: " + sellerId);
         }
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<AuctionItem> auctions = auctionItemService.getAuctionsBySeller(seller.get(), pageable);
         Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Get auctions by category
     @GetMapping("/category/{category}")
     public ResponseEntity<ApiResponse<Page<AuctionItemDto>>> getAuctionsByCategory(
@@ -160,10 +159,10 @@ public class AuctionItemController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<AuctionItem> auctions = auctionItemService.getAuctionsByCategory(category, pageable);
         Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Search auctions
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> searchAuctions(@RequestParam String query) {
@@ -171,10 +170,33 @@ public class AuctionItemController {
         List<AuctionItemDto> auctionDtos = auctions.stream()
                 .map(AuctionItemDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
+    // Filter auctions (Combine search, category, status, price)
+    @GetMapping("/filter")
+    public ResponseEntity<ApiResponse<Page<AuctionItemDto>>> filterAuctions(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) AuctionItem.AuctionStatus status,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<AuctionItem> auctions = auctionItemService.filterAuctions(search, category, status, minPrice, maxPrice,
+                pageable);
+        Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
+
+        return ResponseEntity.ok(ApiResponse.success(auctionDtos));
+    }
+
     // Get auctions by price range
     @GetMapping("/price-range")
     public ResponseEntity<ApiResponse<Page<AuctionItemDto>>> getAuctionsByPriceRange(
@@ -185,10 +207,10 @@ public class AuctionItemController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("currentPrice").ascending());
         Page<AuctionItem> auctions = auctionItemService.getAuctionsByPriceRange(minPrice, maxPrice, pageable);
         Page<AuctionItemDto> auctionDtos = auctions.map(AuctionItemDto::new);
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Get top auctions by price
     @GetMapping("/top-by-price")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> getTopAuctionsByPrice(
@@ -197,10 +219,10 @@ public class AuctionItemController {
         List<AuctionItemDto> auctionDtos = auctions.stream()
                 .map(AuctionItemDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Get recently created auctions
     @GetMapping("/recent")
     public ResponseEntity<ApiResponse<List<AuctionItemDto>>> getRecentAuctions(
@@ -209,40 +231,40 @@ public class AuctionItemController {
         List<AuctionItemDto> auctionDtos = auctions.stream()
                 .map(AuctionItemDto::new)
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(ApiResponse.success(auctionDtos));
     }
-    
+
     // Start auction
     @PatchMapping("/{id}/start")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> startAuction(@PathVariable String id) {
         AuctionItem auction = auctionItemService.startAuction(id);
         AuctionItemDto auctionDto = new AuctionItemDto(auction);
-        
+
         return ResponseEntity.ok(ApiResponse.success("Auction started successfully", auctionDto));
     }
-    
+
     // End auction
     @PatchMapping("/{id}/end")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> endAuction(@PathVariable String id) {
         AuctionItem auction = auctionItemService.endAuction(id);
         AuctionItemDto auctionDto = new AuctionItemDto(auction);
-        
+
         return ResponseEntity.ok(ApiResponse.success("Auction ended successfully", auctionDto));
     }
-    
+
     // Cancel auction
     @PatchMapping("/{id}/cancel")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
     public ResponseEntity<ApiResponse<AuctionItemDto>> cancelAuction(@PathVariable String id) {
         AuctionItem auction = auctionItemService.cancelAuction(id);
         AuctionItemDto auctionDto = new AuctionItemDto(auction);
-        
+
         return ResponseEntity.ok(ApiResponse.success("Auction cancelled successfully", auctionDto));
     }
-    
+
     // Delete auction
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SELLER') and @auctionItemService.isAuctionOwner(authentication.name, #id)")
@@ -250,7 +272,7 @@ public class AuctionItemController {
         auctionItemService.deleteAuctionItem(id);
         return ResponseEntity.ok(ApiResponse.success("Auction deleted successfully", null));
     }
-    
+
     // Get auction statistics
     @GetMapping("/stats/seller/{sellerId}")
     public ResponseEntity<ApiResponse<Long>> getSellerAuctionCount(@PathVariable String sellerId) {
@@ -258,11 +280,11 @@ public class AuctionItemController {
         if (!seller.isPresent()) {
             throw new UserNotFoundException("Seller not found with ID: " + sellerId);
         }
-        
+
         long count = auctionItemService.getAuctionCountBySeller(seller.get());
         return ResponseEntity.ok(ApiResponse.success("Seller auction count", count));
     }
-    
+
     // Get total active auctions count
     @GetMapping("/stats/active-count")
     public ResponseEntity<ApiResponse<Long>> getActiveAuctionsCount() {

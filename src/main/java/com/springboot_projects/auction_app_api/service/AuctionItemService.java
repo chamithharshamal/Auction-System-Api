@@ -273,4 +273,9 @@ public class AuctionItemService {
         }
     }
 
+    // Filter auctions
+    public Page<AuctionItem> filterAuctions(String searchTerm, String category, AuctionItem.AuctionStatus status,
+            BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return auctionItemRepository.filterAuctions(searchTerm, category, status, minPrice, maxPrice, pageable);
+    }
 }

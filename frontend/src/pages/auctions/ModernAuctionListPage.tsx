@@ -22,6 +22,13 @@ import {
   Grid,
   Skeleton,
   IconButton,
+  Slider,
+  Drawer,
+  useMediaQuery,
+  useTheme,
+  Stack,
+  Divider,
+  SelectChangeEvent
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -30,67 +37,71 @@ import {
   FilterAlt,
   Favorite,
   FavoriteBorder,
+  Close,
+  RestartAlt
 } from '@mui/icons-material';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import type { AuctionItem, PaginatedResponse } from '../../types/api';
-import { AuctionStatus } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
 import { watchlistService } from '../../services/watchlistService';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ModernAuctionListPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Data State
   const [auctions, setAuctions] = useState<PaginatedResponse<AuctionItem> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
+  
+  // Filter States
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
-  const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || '');
+  const [selectedStatus, setSelectedStatus] = useState<string>(searchParams.get('status') || '');
+  const [priceRange, setPriceRange] = useState<number[]>([0, 10000]);
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'createdAt');
-  const [sortDir] = useState<'asc' | 'desc'>(
-    (searchParams.get('sortDir') as 'asc' | 'desc') || 'desc'
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>(
+      (searchParams.get('sortDir') as 'asc' | 'desc') || 'desc'
   );
+  
+  // View States
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '0'));
-  const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
-  const [showFilters, setShowFilters] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
 
   const categories = [
-    'Electronics',
-    'Art & Collectibles',
-    'Jewelry',
-    'Vehicles',
-    'Real Estate',
-    'Sports & Recreation',
-    'Books & Media',
-    'Fashion',
-    'Home & Garden',
-    'Other',
+    'Electronics', 'Art & Collectibles', 'Jewelry', 'Vehicles', 
+    'Real Estate', 'Sports & Recreation', 'Books & Media', 
+    'Fashion', 'Home & Garden', 'Other'
   ];
 
   const statusOptions = [
-    { value: '', label: 'All Status' },
     { value: 'ACTIVE', label: 'Active' },
     { value: 'SCHEDULED', label: 'Scheduled' },
     { value: 'ENDED', label: 'Ended' },
   ];
 
   const sortOptions = [
-    { value: 'createdAt', label: 'Newest First' },
-    { value: 'endDate', label: 'Ending Soon' },
-    { value: 'currentPrice', label: 'Price: Low to High' },
-    { value: 'currentPrice', label: 'Price: High to Low' },
+    { value: 'createdAt-desc', label: 'Newest First' },
+    { value: 'endDate-asc', label: 'Ending Soon' },
+    { value: 'currentPrice-asc', label: 'Price: Low to High' },
+    { value: 'currentPrice-desc', label: 'Price: High to Low' },
   ];
 
   useEffect(() => {
-    loadAuctions();
-  }, [page, sortBy, sortDir, selectedCategory, selectedStatus]);
+    const delayDebounceFn = setTimeout(() => {
+      loadAuctions();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [page, sortBy, sortDir, selectedCategory, selectedStatus, searchQuery, priceRange]);
 
   useEffect(() => {
-    if (user) {
-      loadWatchlist();
-    }
+    if (user) loadWatchlist();
   }, [user]);
 
   const loadWatchlist = async () => {
@@ -104,10 +115,7 @@ const ModernAuctionListPage: React.FC = () => {
 
   const toggleWatchlist = async (auctionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) {
-      // Redirect to login or show message
-      return;
-    }
+    if (!user) return; 
 
     const isWatched = watchlist.has(auctionId);
     try {
@@ -130,7 +138,17 @@ const ModernAuctionListPage: React.FC = () => {
   const loadAuctions = async () => {
     try {
       setLoading(true);
-      const data = await auctionService.getAllAuctions(page, 12, sortBy, sortDir);
+      const data = await auctionService.filterAuctions({
+        search: searchQuery,
+        category: selectedCategory,
+        status: selectedStatus,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1] < 10000 ? priceRange[1] : undefined,
+        page,
+        size: 12,
+        sortBy,
+        sortDir
+      });
       setAuctions(data);
     } catch (error) {
       console.error('Error loading auctions:', error);
@@ -140,417 +158,341 @@ const ModernAuctionListPage: React.FC = () => {
   };
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.append('search', searchQuery);
-    if (selectedCategory) params.append('category', selectedCategory);
-    if (selectedStatus) params.append('status', selectedStatus);
-    params.append('sortBy', sortBy);
-    params.append('sortDir', sortDir);
-    params.append('page', '0');
-    setSearchParams(params);
     setPage(0);
     loadAuctions();
   };
 
-  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value - 1);
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setSelectedStatus('');
+    setPriceRange([0, 10000]);
+    setPage(0);
+  };
+
+  const handleSortChange = (e: SelectChangeEvent) => {
+      const value = e.target.value;
+      const [field, dir] = value.split('-');
+      setSortBy(field);
+      setSortDir(dir as 'asc' | 'desc');
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
   };
 
   const getTimeRemaining = (endDate: string) => {
-    const now = new Date().getTime();
-    const end = new Date(endDate).getTime();
-    const diff = end - now;
-
-    if (diff <= 0) return 'Ended';
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) return `${days}d ${hours}h left`;
-    if (hours > 0) return `${hours}h ${minutes}m left`;
-    return `${minutes}m left`;
-  };
-
-  const getStatusColor = (status: AuctionStatus) => {
+      const now = new Date().getTime();
+      const end = new Date(endDate).getTime();
+      const diff = end - now;
+  
+      if (diff <= 0) return 'Ended';
+  
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+      if (days > 0) return `${days}d ${hours}h left`;
+      if (hours > 0) return `${hours}h ${minutes}m left`;
+      return `${minutes}m left`;
+    };
+  
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case AuctionStatus.ACTIVE:
-        return 'success';
-      case AuctionStatus.ENDED:
-        return 'default';
-      case AuctionStatus.CANCELLED:
-        return 'error';
-      default:
-        return 'warning';
+      case 'ACTIVE': return 'success';
+      case 'ENDED': return 'default';
+      case 'CANCELLED': return 'error';
+      default: return 'warning';
     }
   };
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography
-          variant="h2"
-          component="h1"
-          sx={{
-            fontWeight: 800,
-            background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          Browse Auctions
-        </Typography>
-        <IconButton
-          onClick={() => setShowFilters(!showFilters)}
-          sx={{
-            backgroundColor: showFilters ? 'primary.main' : 'grey.200',
-            color: showFilters ? 'white' : 'text.primary',
-            borderRadius: 3,
-            p: 1.5,
-            '&:hover': {
-              backgroundColor: showFilters ? 'primary.dark' : 'grey.300',
-            },
-          }}
-        >
-          <FilterAlt />
-        </IconButton>
+  const FilterContent = () => (
+    <Box sx={{ p: 2 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h6" fontWeight={700}>Filters</Typography>
+        <Button startIcon={<RestartAlt />} onClick={handleClearFilters} size="small">
+          Reset
+        </Button>
       </Box>
 
-      {/* Filters */}
-      {showFilters && (
-        <Paper sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: '0 6px 16px rgba(0, 0, 0, 0.08)' }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                placeholder="Search auctions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: 'primary.main' }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ borderRadius: 2 }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={selectedCategory}
-                  label="Category"
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  sx={{ borderRadius: 2 }}
-                >
-                  <MenuItem value="">All Categories</MenuItem>
-                  {categories.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {category}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={selectedStatus}
-                  label="Status"
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  sx={{ borderRadius: 2 }}
-                >
-                  {statusOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Sort By</InputLabel>
-                <Select
-                  value={sortBy}
-                  label="Sort By"
-                  onChange={(e) => setSortBy(e.target.value)}
-                  sx={{ borderRadius: 2 }}
-                >
-                  {sortOptions.map((option, index) => (
-                    <MenuItem key={index} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleSearch}
-                startIcon={<SearchIcon />}
-                fullWidth
-                sx={{
-                  py: 1.5,
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  boxShadow: '0 4px 12px rgba(0, 121, 107, 0.25)',
-                  '&:hover': {
-                    boxShadow: '0 6px 16px rgba(0, 121, 107, 0.35)',
-                  },
-                }}
-              >
-                Search
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
-      )}
+      <Stack spacing={3}>
+        {/* Search */}
+        <TextField
+          fullWidth
+          label="Search"
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            endAdornment: <SearchIcon color="action" />
+          }}
+        />
 
-      {/* View Controls */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
-          {auctions?.totalElements || 0} auctions found
-        </Typography>
-        <Box display="flex" gap={1}>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(_e, newMode) => newMode && setViewMode(newMode)}
-            size="small"
-            sx={{
-              height: 40,
-              '& .MuiToggleButton-root': {
-                borderRadius: 2,
-                borderColor: 'primary.main',
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                },
-              },
-            }}
+        <Divider />
+
+        {/* Category */}
+        <FormControl fullWidth size="small">
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={selectedCategory}
+            label="Category"
+            onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            <ToggleButton value="grid">
-              <ViewModule />
-            </ToggleButton>
-            <ToggleButton value="list">
-              <ViewList />
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-      </Box>
-
-      {/* Auctions Grid/List */}
-      {loading ? (
-        <Grid container spacing={3}>
-          {[1, 2, 3, 4, 5, 6].map((item) => (
-            <Grid size={{ xs: 12, sm: 6, md: viewMode === 'grid' ? 4 : 12 }} key={item}>
-              <Skeleton variant="rounded" height={viewMode === 'grid' ? 400 : 200} sx={{ borderRadius: 3 }} />
-            </Grid>
-          ))}
-        </Grid>
-      ) : auctions && auctions.content.length > 0 ? (
-        <>
-          <Grid container spacing={3}>
-            {auctions.content.map((auction) => (
-              <Grid size={{ xs: 12, sm: 6, md: viewMode === 'grid' ? 4 : 12 }} key={auction.id}>
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: viewMode === 'list' ? 'row' : 'column',
-                    cursor: 'pointer',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    transition: 'all 0.3s ease-in-out',
-                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.08)',
-                    '&:hover': {
-                      transform: 'translateY(-6px)',
-                      boxShadow: '0 12px 32px rgba(0, 0, 0, 0.15)',
-                    },
-                  }}
-                  onClick={() => navigate(`/auctions/${auction.id}`)}
-                >
-                  <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 100 }}>
-                    <IconButton
-                      onClick={(e) => toggleWatchlist(auction.id, e)}
-                      sx={{ bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
-                    >
-                      {watchlist.has(auction.id) ? <Favorite color="error" /> : <FavoriteBorder />}
-                    </IconButton>
-                  </Box>
-                  {auction.imageUrls && auction.imageUrls.length > 0 && (
-                    <CardMedia
-                      component="img"
-                      height={viewMode === 'list' ? 200 : 200}
-                      image={auction.imageUrls[0]}
-                      alt={auction.title}
-                      sx={{
-                        width: viewMode === 'list' ? 300 : '100%',
-                        flexShrink: 0,
-                        objectFit: 'cover',
-                      }}
-                    />
-                  )}
-                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', py: 2.5, px: 3 }}>
-                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
-                      <Typography
-                        variant="h5"
-                        component="h3"
-                        noWrap
-                        sx={{
-                          fontWeight: 700,
-                          color: 'text.primary',
-                        }}
-                      >
-                        {auction.title}
-                      </Typography>
-                      <Chip
-                        label={auction.status}
-                        color={getStatusColor(auction.status) as any}
-                        size="small"
-                        sx={{
-                          fontWeight: 700,
-                          borderRadius: 1.5,
-                        }}
-                      />
-                    </Box>
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      {auction.description.substring(0, viewMode === 'list' ? 200 : 100)}...
-                    </Typography>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mt="auto">
-                      <Box>
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontWeight: 800,
-                            color: 'primary.main',
-                          }}
-                        >
-                          {formatPrice(auction.currentPrice)}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontWeight: 500 }}
-                        >
-                          {auction.totalBids} bids
-                        </Typography>
-                      </Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ fontWeight: 600 }}
-                      >
-                        {getTimeRemaining(auction.endDate)}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                  <CardActions sx={{ p: 3, pt: 0 }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      fullWidth={viewMode === 'grid'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/auctions/${auction.id}`);
-                      }}
-                      sx={{
-                        py: 1.2,
-                        fontWeight: 700,
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0, 121, 107, 0.25)',
-                        '&:hover': {
-                          boxShadow: '0 6px 16px rgba(0, 121, 107, 0.35)',
-                        },
-                      }}
-                    >
-                      View Details
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
+            <MenuItem value="">All Categories</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat} value={cat}>{cat}</MenuItem>
             ))}
-          </Grid>
+          </Select>
+        </FormControl>
 
-          {/* Pagination */}
-          {auctions.totalPages > 1 && (
-            <Box display="flex" justifyContent="center" mt={6}>
-              <Pagination
-                count={auctions.totalPages}
-                page={page + 1}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
-                sx={{
-                  '& .MuiPaginationItem-root': {
-                    fontWeight: 600,
-                    borderRadius: 2,
-                  },
-                  '& .Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                  },
-                }}
-              />
-            </Box>
-          )}
-        </>
-      ) : (
-        <Box textAlign="center" py={12}>
-          <Typography
-            variant="h4"
-            color="text.secondary"
-            sx={{ mb: 3, fontWeight: 500 }}
+        <Divider />
+
+        {/* Status */}
+        <Box>
+          <Typography variant="subtitle2" gutterBottom fontWeight={600}>Status</Typography>
+          <FormControl fullWidth size="small">
+          <Select
+            value={selectedStatus}
+            displayEmpty
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            renderValue={(selected) => {
+                if (selected === '') {
+                  return <em>All Status</em>;
+                }
+                return selected;
+              }}
           >
-            No auctions found matching your criteria.
+            <MenuItem value="">All Status</MenuItem>
+            {statusOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+            ))}
+          </Select>
+          </FormControl>
+        </Box>
+
+        <Divider />
+
+        {/* Price Range */}
+        <Box>
+          <Typography variant="subtitle2" gutterBottom fontWeight={600}>
+            Price Range
           </Typography>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('');
-              setSelectedStatus('');
-              setPage(0);
-              loadAuctions();
-            }}
-            sx={{
-              py: 1.5,
-              px: 4,
-              fontWeight: 700,
-              borderRadius: 3,
-              boxShadow: '0 4px 12px rgba(0, 121, 107, 0.25)',
-              '&:hover': {
-                boxShadow: '0 6px 16px rgba(0, 121, 107, 0.35)',
-              },
-            }}
+          <Slider
+            value={priceRange}
+            onChange={(_e, newValue) => setPriceRange(newValue as number[])}
+            valueLabelDisplay="auto"
+            min={0}
+            max={10000}
+            step={100}
+          />
+          <Box display="flex" justifyContent="space-between" mt={1}>
+            <Typography variant="caption">${priceRange[0]}</Typography>
+            <Typography variant="caption">${priceRange[1]}</Typography>
+          </Box>
+        </Box>
+      </Stack>
+    </Box>
+  );
+
+  return (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Mobile Filter Toggle */}
+      {isMobile && (
+        <Box mb={2}>
+          <Button 
+            variant="outlined" 
+            startIcon={<FilterAlt />} 
+            onClick={() => setMobileOpen(true)}
+            fullWidth
           >
-            Clear Filters
+            Filters
           </Button>
         </Box>
       )}
+
+      <Grid container spacing={3}>
+        {/* Sidebar (Desktop) */}
+        {!isMobile && (
+          <Grid size={{ md: 3, lg: 2.5 }}>
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                border: '1px solid',
+                borderColor: 'grey.200',
+                borderRadius: 3,
+                position: 'sticky',
+                top: 80
+              }}
+            >
+              <FilterContent />
+            </Paper>
+          </Grid>
+        )}
+
+        {/* Mobile Drawer */}
+        <Drawer
+          anchor="left"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          sx={{ '& .MuiDrawer-paper': { width: 280, p: 2 } }}
+        >
+            <Box display="flex" justifyContent="flex-end">
+                <IconButton onClick={() => setMobileOpen(false)}><Close /></IconButton>
+            </Box>
+            <FilterContent />
+        </Drawer>
+
+        {/* Main Content */}
+        <Grid size={{ xs: 12, md: 9, lg: 9.5 }}>
+          {/* Header Controls */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
+            <Typography variant="h4" fontWeight={800}>
+              {auctions?.totalElements || 0} Auctions
+            </Typography>
+
+            <Box display="flex" gap={2} alignItems="center">
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                    <InputLabel id="sort-select-label">Sort</InputLabel>
+                    <Select
+                        labelId="sort-select-label"
+                        value={`${sortBy}-${sortDir}`}
+                        label="Sort"
+                        onChange={handleSortChange}
+                        variant="outlined"
+                    >
+                        {sortOptions.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                 <ToggleButtonGroup
+                    value={viewMode}
+                    exclusive
+                    onChange={(_e, newMode) => newMode && setViewMode(newMode)}
+                    size="small"
+                  >
+                    <ToggleButton value="grid"><ViewModule /></ToggleButton>
+                    <ToggleButton value="list"><ViewList /></ToggleButton>
+                  </ToggleButtonGroup>
+            </Box>
+          </Box>
+
+          {/* Listings */}
+          {loading ? (
+             <Grid container spacing={3}>
+               {[1, 2, 3, 4, 5, 6].map((n) => (
+                 <Grid size={{ xs: 12, sm: viewMode === 'list' ? 12 : 6, lg: viewMode === 'list' ? 12 : 4 }} key={n}>
+                   <Skeleton variant="rounded" height={300} />
+                 </Grid>
+               ))}
+             </Grid>
+          ) : auctions && auctions.content.length > 0 ? (
+            <>
+              <Grid container spacing={3}>
+                {auctions.content.map((auction) => (
+                  <Grid size={{ xs: 12, sm: viewMode === 'list' ? 12 : 6, lg: viewMode === 'list' ? 12 : 4 }} key={auction.id}>
+                    <Card
+                      onClick={() => navigate(`/auctions/${auction.id}`)}
+                      sx={{
+                        height: '100%',
+                        cursor: 'pointer',
+                        borderRadius: 3,
+                        display: viewMode === 'list' ? 'flex' : 'block',
+                        transition: 'transform 0.2s',
+                        '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
+                      }}
+                    >
+                      <Box sx={{ position: 'relative', width: viewMode === 'list' ? 250 : '100%' }}>
+                        <CardMedia
+                           component="img"
+                           height={viewMode === 'list' ? '100%' : 220}
+                           image={auction.imageUrls?.[0]}
+                           sx={{ objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          onClick={(e) => toggleWatchlist(auction.id, e)}
+                          sx={{ 
+                            position: 'absolute', 
+                            top: 8, 
+                            right: 8, 
+                            bgcolor: 'rgba(255,255,255,0.9)',
+                            '&:hover': { bgcolor: 'white' }
+                          }}
+                        >
+                          {watchlist.has(auction.id) ? <Favorite color="error" /> : <FavoriteBorder />}
+                        </IconButton>
+                        <Chip 
+                            label={auction.status} 
+                            color={getStatusColor(auction.status) as any}
+                            size="small"
+                            sx={{ position: 'absolute', top: 8, left: 8, fontWeight: 700 }}
+                        />
+                      </Box>
+                      
+                      <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
+                        <Typography variant="h6" fontWeight={700} noWrap gutterBottom>
+                          {auction.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" paragraph sx={{ 
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                        }}>
+                          {auction.description}
+                        </Typography>
+                        
+                        <Divider sx={{ my: 1.5 }} />
+                        
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Box>
+                            <Typography variant="caption" color="text.secondary">Current Price</Typography>
+                            <Typography variant="h6" color="primary.main" fontWeight={800}>
+                              {formatPrice(auction.currentPrice)}
+                            </Typography>
+                          </Box>
+                          <Box textAlign="right">
+                             <Typography variant="caption" color="text.secondary">Ends In</Typography>
+                             <Typography variant="subtitle2" fontWeight={600}>
+                                {getTimeRemaining(auction.endDate)}
+                             </Typography>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                      
+                      <CardActions sx={{ p: 2, pt: 0 }}>
+                         <Button fullWidth variant="contained" size="small" sx={{ borderRadius: 2 }}>
+                            Bid Now
+                         </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {auctions.totalPages > 1 && (
+                <Box display="flex" justifyContent="center" mt={4}>
+                  <Pagination 
+                    count={auctions.totalPages} 
+                    page={page + 1} 
+                    onChange={(_e, v) => setPage(v - 1)} 
+                    color="primary"
+                    shape="rounded"
+                  />
+                </Box>
+              )}
+            </>
+          ) : (
+            <Box textAlign="center" py={10}>
+                <Typography variant="h5" color="text.secondary" gutterBottom>No auctions found</Typography>
+                <Button variant="outlined" onClick={handleClearFilters}>Clear Filters</Button>
+            </Box>
+          )}
+        </Grid>
+      </Grid>
     </Container>
   );
 };

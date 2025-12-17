@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface AuctionItemRepository extends MongoRepository<AuctionItem, String> {
+public interface AuctionItemRepository extends MongoRepository<AuctionItem, String>, AuctionItemRepositoryCustom {
 
     // Find by seller
     List<AuctionItem> findBySeller(User seller);
