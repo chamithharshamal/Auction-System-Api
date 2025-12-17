@@ -226,10 +226,11 @@ public class AuctionItemService {
     public void deleteAuctionItem(String auctionId) {
         Optional<AuctionItem> auction = auctionItemRepository.findById(auctionId);
         if (auction.isPresent()) {
-            if (auction.get().getStatus() == AuctionItem.AuctionStatus.DRAFT) {
+            // Allow deletion only if there are no bids (as requested)
+            if (auction.get().getTotalBids() == 0) {
                 auctionItemRepository.deleteById(auctionId);
             } else {
-                throw new IllegalStateException("Only draft auctions can be deleted");
+                throw new IllegalStateException("Cannot delete auction with existing bids");
             }
         } else {
             throw new RuntimeException("Auction not found with id: " + auctionId);

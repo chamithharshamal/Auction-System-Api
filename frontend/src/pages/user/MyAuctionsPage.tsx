@@ -11,6 +11,11 @@ import {
   Chip,
   Fab,
   Grid,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import {
   Add,
@@ -30,6 +35,8 @@ const MyAuctionsPage: React.FC = () => {
   const { user } = useAuth();
   const [auctions, setAuctions] = useState<PaginatedResponse<AuctionItem> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [auctionToDelete, setAuctionToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -83,6 +90,33 @@ const MyAuctionsPage: React.FC = () => {
       default:
         return 'warning';
     }
+  };
+
+  const handleDeleteClick = (auctionId: string) => {
+    setAuctionToDelete(auctionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (auctionToDelete) {
+      try {
+        setLoading(true);
+        await auctionService.deleteAuction(auctionToDelete);
+        await loadMyAuctions();
+        setDeleteDialogOpen(false);
+        setAuctionToDelete(null);
+      } catch (error) {
+        console.error('Failed to delete auction:', error);
+        alert('Failed to delete auction. It may have bids or is not in a valid state.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setAuctionToDelete(null);
   };
 
   if (loading) {
@@ -180,9 +214,10 @@ const MyAuctionsPage: React.FC = () => {
                     size="small"
                     color="error"
                     startIcon={<Delete />}
+                    disabled={auction.totalBids > 0}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Handle delete auction
+                      handleDeleteClick(auction.id);
                     }}
                   >
                     Delete
@@ -224,6 +259,27 @@ const MyAuctionsPage: React.FC = () => {
       >
         <Add />
       </Fab>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirm Deletion"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this auction? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
