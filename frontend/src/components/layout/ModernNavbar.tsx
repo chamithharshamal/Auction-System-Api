@@ -21,6 +21,7 @@ import {
   List,
   Logout,
   Notifications,
+  Favorite,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -59,9 +60,9 @@ const ModernNavbar: React.FC = () => {
   };
 
   return (
-    <AppBar 
-      position="sticky" 
-      sx={{ 
+    <AppBar
+      position="sticky"
+      sx={{
         backgroundColor: 'background.paper',
         boxShadow: '0 2px 15px rgba(0, 0, 0, 0.1)',
         borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
@@ -226,7 +227,7 @@ const ModernNavbar: React.FC = () => {
               {/* Notifications */}
               <IconButton
                 size="large"
-                sx={{ 
+                sx={{
                   color: 'text.secondary',
                   width: 44,
                   height: 44,
@@ -248,7 +249,7 @@ const ModernNavbar: React.FC = () => {
                 aria-controls="menu-appbar"
                 aria-haspopup="true"
                 onClick={handleMenuOpen}
-                sx={{ 
+                sx={{
                   width: 44,
                   height: 44,
                   '&:hover': {
@@ -312,6 +313,10 @@ const ModernNavbar: React.FC = () => {
                     My Auctions
                   </MenuItem>
                 )}
+                <MenuItem onClick={() => { navigate('/watchlist'); handleMenuClose(); }}>
+                  <Favorite sx={{ mr: 1.5, fontSize: 20 }} />
+                  Watchlist
+                </MenuItem>
                 <MenuItem onClick={handleLogout}>
                   <Logout sx={{ mr: 1.5, fontSize: 20 }} />
                   Logout
@@ -323,7 +328,7 @@ const ModernNavbar: React.FC = () => {
               <Button
                 variant="outlined"
                 onClick={() => navigate('/login')}
-                sx={{ 
+                sx={{
                   color: 'primary.main',
                   borderColor: 'primary.main',
                   fontSize: '0.95rem',

@@ -18,6 +18,7 @@ import EditAuctionPage from './pages/auctions/EditAuctionPage';
 import UserProfilePage from './pages/user/UserProfilePage';
 import MyAuctionsPage from './pages/user/MyAuctionsPage';
 import MyBidsPage from './pages/user/MyBidsPage';
+import WatchlistPage from './pages/user/WatchlistPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route component
@@ -90,6 +91,14 @@ const AppRoutes: React.FC = () => {
             element={
               <ProtectedRoute>
                 <MyBidsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/watchlist"
+            element={
+              <ProtectedRoute>
+                <WatchlistPage />
               </ProtectedRoute>
             }
           />

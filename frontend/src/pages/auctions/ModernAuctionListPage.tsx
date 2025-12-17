@@ -28,11 +28,15 @@ import {
   ViewList,
   ViewModule,
   FilterAlt,
+  Favorite,
+  FavoriteBorder,
 } from '@mui/icons-material';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import type { AuctionItem, PaginatedResponse } from '../../types/api';
 import { AuctionStatus } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
+import { watchlistService } from '../../services/watchlistService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const ModernAuctionListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,7 +52,9 @@ const ModernAuctionListPage: React.FC = () => {
   );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '0'));
+  const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
+  const { user } = useAuth();
 
   const categories = [
     'Electronics',
@@ -80,6 +86,46 @@ const ModernAuctionListPage: React.FC = () => {
   useEffect(() => {
     loadAuctions();
   }, [page, sortBy, sortDir, selectedCategory, selectedStatus]);
+
+  useEffect(() => {
+    if (user) {
+      loadWatchlist();
+    }
+  }, [user]);
+
+  const loadWatchlist = async () => {
+    try {
+      const items = await watchlistService.getWatchlist();
+      setWatchlist(new Set(items.map(item => item.id)));
+    } catch (error) {
+      console.error('Error loading watchlist', error);
+    }
+  };
+
+  const toggleWatchlist = async (auctionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      // Redirect to login or show message
+      return;
+    }
+
+    const isWatched = watchlist.has(auctionId);
+    try {
+      if (isWatched) {
+        await watchlistService.removeFromWatchlist(auctionId);
+        setWatchlist(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(auctionId);
+          return newSet;
+        });
+      } else {
+        await watchlistService.addToWatchlist(auctionId);
+        setWatchlist(prev => new Set(prev).add(auctionId));
+      }
+    } catch (error) {
+      console.error('Error toggling watchlist', error);
+    }
+  };
 
   const loadAuctions = async () => {
     try {
@@ -337,6 +383,14 @@ const ModernAuctionListPage: React.FC = () => {
                   }}
                   onClick={() => navigate(`/auctions/${auction.id}`)}
                 >
+                  <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 100 }}>
+                    <IconButton
+                      onClick={(e) => toggleWatchlist(auction.id, e)}
+                      sx={{ bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    >
+                      {watchlist.has(auction.id) ? <Favorite color="error" /> : <FavoriteBorder />}
+                    </IconButton>
+                  </Box>
                   {auction.imageUrls && auction.imageUrls.length > 0 && (
                     <CardMedia
                       component="img"

@@ -42,6 +42,7 @@ import type { AuctionItem, Bid, PlaceBidRequest } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
 import { bidService } from '../../services/bidService';
 import { webSocketService } from '../../services/webSocketService';
+import { watchlistService } from '../../services/watchlistService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PaymentModal } from '../../components/payment/PaymentModal';
 
@@ -60,6 +61,44 @@ const ModernAuctionDetailPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [favorited, setFavorited] = useState(false);
+
+  useEffect(() => {
+    if (id && isAuthenticated) {
+      checkWatchlistStatus();
+    }
+  }, [id, isAuthenticated]);
+
+  const checkWatchlistStatus = async () => {
+    if (id) {
+      try {
+        const isWatched = await watchlistService.isWatched(id);
+        setFavorited(isWatched);
+      } catch (error) {
+        console.error('Error checking watchlist status:', error);
+      }
+    }
+  };
+
+  const handleToggleWatchlist = async () => {
+    if (!isAuthenticated) {
+      setError('Please login to add to watchlist');
+      return;
+    }
+
+    try {
+      if (favorited) {
+        await watchlistService.removeFromWatchlist(id!);
+        setSuccess('Removed from watchlist');
+      } else {
+        await watchlistService.addToWatchlist(id!);
+        setSuccess('Added to watchlist');
+      }
+      setFavorited(!favorited);
+    } catch (error) {
+      console.error('Error toggling watchlist:', error);
+      setError('Failed to update watchlist');
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -336,7 +375,7 @@ const ModernAuctionDetailPage: React.FC = () => {
                 </Box>
                 <Box display="flex" gap={1}>
                   <IconButton
-                    onClick={() => setFavorited(!favorited)}
+                    onClick={handleToggleWatchlist}
                     sx={{
                       color: favorited ? '#ff6b6b' : 'text.secondary',
                       backgroundColor: favorited ? 'rgba(255, 107, 107, 0.1)' : 'grey.100',
