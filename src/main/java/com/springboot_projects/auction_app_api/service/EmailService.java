@@ -195,6 +195,62 @@ public class EmailService {
         }
     }
 
+    @Async
+    public void sendPaymentConfirmationEmail(User buyer, AuctionItem auction, BigDecimal amount, String transactionId,
+            String shippingName, String shippingAddress) {
+        if (!emailConfig.isEnabled())
+            return;
+
+        try {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("userName", buyer.getFirstName() + " " + buyer.getLastName());
+            variables.put("auctionTitle", auction.getTitle());
+            variables.put("amount", amount);
+            variables.put("transactionId", transactionId);
+            variables.put("shippingName", shippingName);
+            variables.put("shippingAddress", shippingAddress);
+
+            String subject = "Payment Confirmation - " + auction.getTitle();
+            String template = "payment-confirmation-email";
+
+            sendHtmlEmail(buyer.getEmail(), subject, template, variables);
+
+            logger.info("Payment confirmation email sent to: {}", buyer.getEmail());
+
+        } catch (Exception e) {
+            logger.error("Failed to send payment confirmation email to: {}", buyer.getEmail(), e);
+        }
+    }
+
+    @Async
+    public void sendPaymentReceivedEmail(User seller, AuctionItem auction, BigDecimal amount, User buyer,
+            String shippingName, String shippingAddress, String shippingPhone) {
+        if (!emailConfig.isEnabled())
+            return;
+
+        try {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("sellerName", seller.getFirstName() + " " + seller.getLastName());
+            variables.put("auctionTitle", auction.getTitle());
+            variables.put("amount", amount);
+            variables.put("buyerName", buyer.getFirstName() + " " + buyer.getLastName());
+            variables.put("buyerEmail", buyer.getEmail());
+            variables.put("shippingName", shippingName);
+            variables.put("shippingAddress", shippingAddress);
+            variables.put("shippingPhone", shippingPhone);
+
+            String subject = "Payment Received - " + auction.getTitle();
+            String template = "payment-received-seller-email";
+
+            sendHtmlEmail(seller.getEmail(), subject, template, variables);
+
+            logger.info("Payment received email sent to seller: {}", seller.getEmail());
+
+        } catch (Exception e) {
+            logger.error("Failed to send payment received email to seller: {}", seller.getEmail(), e);
+        }
+    }
+
     private void sendHtmlEmail(String to, String subject, String template, Map<String, Object> variables)
             throws MessagingException {
 

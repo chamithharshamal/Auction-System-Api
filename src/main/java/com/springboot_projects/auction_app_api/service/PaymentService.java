@@ -5,6 +5,7 @@ import com.springboot_projects.auction_app_api.dto.PaymentResponse;
 import com.springboot_projects.auction_app_api.exception.AuctionNotFoundException;
 import com.springboot_projects.auction_app_api.exception.UnauthorizedException;
 import com.springboot_projects.auction_app_api.model.AuctionItem;
+import com.springboot_projects.auction_app_api.model.Notification;
 import com.springboot_projects.auction_app_api.model.Payment;
 import com.springboot_projects.auction_app_api.model.User;
 import com.springboot_projects.auction_app_api.repository.AuctionItemRepository;
@@ -26,6 +27,12 @@ public class PaymentService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Transactional
     public PaymentResponse processPayment(PaymentRequest request, String username) {
@@ -77,9 +84,43 @@ public class PaymentService {
                 method,
                 transactionId,
                 "SUCCESS");
+        payment.setShippingName(request.getShippingName());
+        payment.setShippingAddress(request.getShippingAddress());
+        payment.setShippingPhoneNumber(request.getShippingPhoneNumber());
+        payment.setCity(request.getCity());
+        payment.setZipCode(request.getZipCode());
+        payment.setCountry(request.getCountry());
+        payment.setDeliveryCharge(request.getDeliveryCharge());
+        payment.setTotalAmount(request.getTotalAmount());
         paymentRepository.save(payment);
 
-        // 5. Update Auction Status
+        // 5. Notify Seller
+        notificationService.createNotification(
+                auction.getSeller().getId(),
+                "Payment received for auction: " + auction.getTitle() + ". Please ship to "
+                        + request.getShippingAddress(),
+                Notification.NotificationType.PAYMENT_RECEIVED,
+                auction.getId());
+
+        // 6. Send Email Notifications
+        emailService.sendPaymentConfirmationEmail(
+                payer,
+                auction,
+                auction.getCurrentPrice(),
+                transactionId,
+                request.getShippingName(),
+                request.getShippingAddress());
+
+        emailService.sendPaymentReceivedEmail(
+                auction.getSeller(),
+                auction,
+                auction.getCurrentPrice(),
+                payer,
+                request.getShippingName(),
+                request.getShippingAddress(),
+                request.getShippingPhoneNumber());
+
+        // 7. Update Auction Status
         auction.setPaid(true);
         auctionItemRepository.save(auction);
 

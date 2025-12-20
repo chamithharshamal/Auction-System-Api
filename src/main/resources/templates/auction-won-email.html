@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Congratulations! You won the auction</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; }
+        .header { background-color: #00796b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #00796b; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
+        .footer { text-align: center; font-size: 12px; color: #777; margin-top: 30px; }
+        .details { background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Congratulations!</h1>
+        </div>
+        <div class="content">
+            <p>Hi <span th:text="${winnerName}">Winner</span>,</p>
+            <p>Great news! You have won the auction for <strong><span th:text="${auctionTitle}">Auction Title</span></strong>.</p>
+            
+            <div class="details">
+                <p><strong>Winning Bid:</strong> $<span th:text="${winningBid}">0.00</span></p>
+                <p><strong>Seller Contact:</strong> <span th:text="${sellerContact}">seller@example.com</span></p>
+            </div>
+            
+            <p>Please click the button below to complete your payment and provide your shipping details.</p>
+            
+            <a th:href="${auctionUrl}" class="button">Pay Now</a>
+            
+            <p>Thank you for using AuctionHub!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 AuctionHub. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,10 +2,12 @@ package com.springboot_projects.auction_app_api.scheduler;
 
 import com.springboot_projects.auction_app_api.model.AuctionItem;
 import com.springboot_projects.auction_app_api.model.Bid;
+import com.springboot_projects.auction_app_api.model.Notification;
 import com.springboot_projects.auction_app_api.repository.AuctionItemRepository;
 import com.springboot_projects.auction_app_api.service.AuctionItemService;
 import com.springboot_projects.auction_app_api.service.BidService;
 import com.springboot_projects.auction_app_api.service.EmailService;
+import com.springboot_projects.auction_app_api.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class AuctionScheduler {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Scheduled(fixedRate = 60000) // Run every minute
     public void startScheduledAuctions() {
@@ -92,6 +97,13 @@ public class AuctionScheduler {
                     if (winningBid.isPresent()) {
                         emailService.sendAuctionWonEmail(endedAuction.getHighestBidder(), endedAuction,
                                 winningBid.get());
+
+                        // Create persistent notification for winner
+                        notificationService.createNotification(
+                                endedAuction.getHighestBidder().getId(),
+                                "Congratulations! You won the auction for: " + endedAuction.getTitle(),
+                                Notification.NotificationType.AUCTION_WON,
+                                endedAuction.getId());
                     }
                 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -26,6 +26,8 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserRole } from '../../types/api';
+import notificationService from '../../services/notificationService';
+import { webSocketService } from '../../services/webSocketService';
 
 const ModernNavbar: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +35,32 @@ const ModernNavbar: React.FC = () => {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchUnreadCount = async () => {
+        try {
+          const count = await notificationService.getUnreadCount();
+          setUnreadCount(count);
+        } catch (error) {
+          console.error("Failed to fetch unread count:", error);
+        }
+      };
+      fetchUnreadCount();
+
+      // Subscribe to real-time notifications
+      if (user?.username) {
+        webSocketService.subscribeToNotifications(user.username, (_notification) => {
+          setUnreadCount(prev => prev + 1);
+        });
+      }
+
+      // Initializing a simple pollar as a fallback
+      const interval = setInterval(fetchUnreadCount, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user?.username]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -236,7 +264,7 @@ const ModernNavbar: React.FC = () => {
                   },
                 }}
               >
-                <Badge badgeContent={3} color="error">
+                <Badge badgeContent={unreadCount} color="error">
                   <Notifications sx={{ fontSize: 24 }} />
                 </Badge>
               </IconButton>

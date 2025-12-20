@@ -62,6 +62,24 @@ class WebSocketService {
             }
         }, 100);
     }
+
+    public subscribeToNotifications(_username: string, callback: (notification: any) => void) {
+        if (!this.client.active) {
+            this.connect();
+        }
+
+        const checkConnection = setInterval(() => {
+            if (this.connected) {
+                clearInterval(checkConnection);
+                // For convertAndSendToUser, Stomp destination is /user/queue/notifications
+                this.client.subscribe('/user/queue/notifications', (message: IMessage) => {
+                    if (message.body) {
+                        callback(JSON.parse(message.body));
+                    }
+                });
+            }
+        }, 100);
+    }
 }
 
 export const webSocketService = new WebSocketService();
