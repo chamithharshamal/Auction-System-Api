@@ -45,6 +45,7 @@ import { webSocketService } from '../../services/webSocketService';
 import { watchlistService } from '../../services/watchlistService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PaymentModal } from '../../components/payment/PaymentModal';
+import PriceTrendsChart from '../../components/auction/PriceTrendsChart';
 
 const ModernAuctionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,6 +61,7 @@ const ModernAuctionDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
+  const [priceTrends, setPriceTrends] = useState<{ amount: number, timestamp: string, bidderName: string }[]>([]);
   const [favorited, setFavorited] = useState(false);
 
   useEffect(() => {
@@ -113,12 +115,19 @@ const ModernAuctionDetailPage: React.FC = () => {
             ...prev,
             currentPrice: message.amount,
             totalBids: (prev.totalBids || 0) + 1,
-            // If the message contains bidder info, we could update that too if needed
-            // But typically the bid notification structure needs to match what we expect
           }) : null);
 
           // Add to bids list
-          setBids(prev => [message, ...prev]);
+          setBids(prev => [message, ...prev].slice(0, 10));
+
+          // Update chart
+          setPriceTrends(prev => [...prev, {
+            amount: message.amount,
+            timestamp: message.timestamp,
+            bidderName: message.bidder ? `${message.bidder.firstName} ${message.bidder.lastName}` : 'Anonymous'
+          }]);
+
+          setSuccess(`New bid received: ${formatPrice(message.amount)}!`);
         }
       });
 
@@ -144,13 +153,18 @@ const ModernAuctionDetailPage: React.FC = () => {
       const auctionData = await auctionService.getAuctionById(id!);
       setAuction(auctionData);
 
-      // Then try to load bids (this might fail if no bids exist)
+      // Then try to load bids
       try {
-        const bidsData = await bidService.getRecentBidsForAuction(id!, 10);
+        const [bidsData, trendsData] = await Promise.all([
+          bidService.getRecentBidsForAuction(id!, 10),
+          bidService.getPriceTrends(id!)
+        ]);
         setBids(bidsData);
+        setPriceTrends(trendsData);
       } catch (bidError) {
-        console.warn('No bids found for this auction:', bidError);
-        setBids([]); // Set empty array if no bids found
+        console.warn('No bids found or error loading charts:', bidError);
+        setBids([]);
+        setPriceTrends([]);
       }
     } catch (error: any) {
       setError('Failed to load auction details');
@@ -326,6 +340,14 @@ const ModernAuctionDetailPage: React.FC = () => {
               </Box>
             )}
           </Card>
+
+          {/* Price Trend Chart - Visual Excitement! */}
+          <Box sx={{ mt: 3 }}>
+            <PriceTrendsChart
+              data={priceTrends}
+              startingPrice={auction.startingPrice}
+            />
+          </Box>
         </Grid>
 
         {/* Auction Details */}

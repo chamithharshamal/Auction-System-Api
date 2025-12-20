@@ -39,6 +39,8 @@ import { bidService } from '../../services/bidService';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import PriceTrendsChart from '../../components/auction/PriceTrendsChart';
+import { webSocketService } from '../../services/webSocketService';
 
 const AuctionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,11 +53,41 @@ const AuctionDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
+  const [priceTrends, setPriceTrends] = useState<{ amount: number, timestamp: string, bidderName: string }[]>([]);
 
   useEffect(() => {
     if (id) {
       loadAuctionDetails();
+
+      // Subscribe to real-time bid updates
+      webSocketService.connect();
+      webSocketService.subscribeToAuction(id, (newBid) => {
+        // Update auction details
+        setAuction(prev => prev ? {
+          ...prev,
+          currentPrice: newBid.amount,
+          totalBids: (prev.totalBids || 0) + 1
+        } : null);
+
+        // Update bids list
+        setBids(prev => [newBid, ...prev].slice(0, 10));
+
+        // Update chart
+        setPriceTrends(prev => [...prev, {
+          amount: newBid.amount,
+          timestamp: newBid.timestamp,
+          bidderName: `${newBid.bidder.firstName} ${newBid.bidder.lastName}`
+        }]);
+
+        setSuccess(`New bid received: ${formatPrice(newBid.amount)}!`);
+      });
     }
+
+    return () => {
+      // We don't necessarily want to disconnect the whole socket if other pages use it,
+      // but we might want to unsubscribe if the service supported it.
+      // For now, just leaving it connected is standard for small apps.
+    };
   }, [id]);
 
   const loadAuctionDetails = async () => {
@@ -67,13 +99,18 @@ const AuctionDetailPage: React.FC = () => {
       const auctionData = await auctionService.getAuctionById(id!);
       setAuction(auctionData);
 
-      // Then try to load bids (this might fail if no bids exist)
+      // Then try to load bids
       try {
-        const bidsData = await bidService.getRecentBidsForAuction(id!, 10);
+        const [bidsData, trendsData] = await Promise.all([
+          bidService.getRecentBidsForAuction(id!, 10),
+          bidService.getPriceTrends(id!)
+        ]);
         setBids(bidsData);
+        setPriceTrends(trendsData);
       } catch (bidError) {
-        console.warn('No bids found for this auction:', bidError);
-        setBids([]); // Set empty array if no bids found
+        console.warn('No bids found or error loading charts:', bidError);
+        setBids([]);
+        setPriceTrends([]);
       }
     } catch (error: any) {
       setError('Failed to load auction details');
@@ -195,6 +232,14 @@ const AuctionDetailPage: React.FC = () => {
               </Box>
             )}
           </Card>
+
+          {/* Price Trend Chart - Added for excitement! */}
+          <Box sx={{ mt: 3 }}>
+            <PriceTrendsChart
+              data={priceTrends}
+              startingPrice={auction.startingPrice}
+            />
+          </Box>
         </Grid>
 
         {/* Auction Details */}

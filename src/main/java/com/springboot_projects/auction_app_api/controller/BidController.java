@@ -110,6 +110,13 @@ public class BidController {
         return ResponseEntity.ok(ApiResponse.success(bidDtos));
     }
 
+    // Get price trends for auction
+    @GetMapping("/auction/{auctionId}/trends")
+    public ResponseEntity<ApiResponse<List<PriceTrendDto>>> getPriceTrends(@PathVariable String auctionId) {
+        List<PriceTrendDto> trends = bidService.getPriceTrendsForAuction(auctionId);
+        return ResponseEntity.ok(ApiResponse.success(trends));
+    }
+
     // Get highest bid for auction
     @GetMapping("/auction/{auctionId}/highest")
     public ResponseEntity<ApiResponse<BidDto>> getHighestBidForAuction(@PathVariable String auctionId) {

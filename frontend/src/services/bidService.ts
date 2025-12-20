@@ -1,9 +1,9 @@
 import api from './api';
-import type { 
-  ApiResponse, 
-  Bid, 
-  PlaceBidRequest, 
-  PaginatedResponse 
+import type {
+  ApiResponse,
+  Bid,
+  PlaceBidRequest,
+  PaginatedResponse
 } from '../types/api';
 
 export const bidService = {
@@ -38,6 +38,12 @@ export const bidService = {
   // Get recent bids for auction
   async getRecentBidsForAuction(auctionId: string, limit = 5): Promise<Bid[]> {
     const response = await api.get<ApiResponse<Bid[]>>(`/bids/auction/${auctionId}/recent?limit=${limit}`);
+    return response.data.data;
+  },
+
+  // Get price trends for auction
+  async getPriceTrends(auctionId: string): Promise<{ amount: number, timestamp: string, bidderName: string }[]> {
+    const response = await api.get<ApiResponse<{ amount: number, timestamp: string, bidderName: string }[]>>(`/bids/auction/${auctionId}/trends`);
     return response.data.data;
   },
 

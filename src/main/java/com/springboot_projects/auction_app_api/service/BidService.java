@@ -1,5 +1,6 @@
 package com.springboot_projects.auction_app_api.service;
 
+import com.springboot_projects.auction_app_api.dto.PriceTrendDto;
 import com.springboot_projects.auction_app_api.model.AuctionItem;
 import com.springboot_projects.auction_app_api.model.Bid;
 import com.springboot_projects.auction_app_api.model.User;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BidService {
@@ -230,6 +232,25 @@ public class BidService {
     // Get all bids with pagination
     public Page<Bid> getAllBids(Pageable pageable) {
         return bidRepository.findAll(pageable);
+    }
+
+    // Get price trends for auction
+    public List<PriceTrendDto> getPriceTrendsForAuction(String auctionId) {
+        Optional<AuctionItem> auctionOpt = auctionItemService.getAuctionItemById(auctionId);
+        if (auctionOpt.isPresent()) {
+            List<Bid> bids = bidRepository.findByAuctionItemOrderByTimestampDesc(auctionOpt.get());
+            // Reverse to get Ascending for the chart, and map to DTO
+            return bids.stream()
+                    .map(bid -> new PriceTrendDto(
+                            bid.getAmount(),
+                            bid.getTimestamp(),
+                            bid.getBidder().getFirstName() + " " + bid.getBidder().getLastName()))
+                    .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
+                        java.util.Collections.reverse(list);
+                        return list;
+                    }));
+        }
+        throw new RuntimeException("Auction not found with id: " + auctionId);
     }
 
     // Private helper methods
