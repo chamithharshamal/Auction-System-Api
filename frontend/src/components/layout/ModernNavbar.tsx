@@ -10,30 +10,49 @@ import {
   Box,
   Avatar,
   InputBase,
-  alpha,
   Badge,
+  Container,
+  Divider,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useColorMode } from '../../contexts/ThemeContext';
 import { UserRole } from '../../types/api';
 import {
   Search as SearchIcon,
   Gavel,
   Add,
   Person,
-  List,
   Logout,
   Notifications,
   Favorite,
   TrendingUp,
+  LightMode,
+  DarkMode,
 } from '@mui/icons-material';
 import notificationService from '../../services/notificationService';
 import { webSocketService } from '../../services/webSocketService';
+
+const NavButton = styled(Button)(({ theme }) => ({
+  color: theme.palette.mode === 'dark' ? '#94A3B8' : '#475569',
+  padding: '10px 20px',
+  borderRadius: '12px',
+  fontWeight: 700,
+  fontSize: '0.9rem',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
+    color: '#10B981',
+    transform: 'translateY(-2px)',
+  },
+}));
 
 const ModernNavbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, logout, hasRole } = useAuth();
+  const { mode, toggleColorMode } = useColorMode();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
@@ -92,321 +111,238 @@ const ModernNavbar: React.FC = () => {
     <AppBar
       position="sticky"
       sx={{
-        backgroundColor: 'background.paper',
-        boxShadow: '0 2px 15px rgba(0, 0, 0, 0.1)',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+        backgroundColor: 'transparent',
+        backgroundImage: 'none',
+        boxShadow: 'none',
+        color: mode === 'dark' ? 'inherit' : 'text.primary',
+        top: 20,
+        zIndex: theme => theme.zIndex.drawer + 1,
       }}
     >
-      <Toolbar sx={{ minHeight: 72, px: { xs: 2, sm: 3 } }}>
-        {/* Logo */}
-        <Box
-          display="flex"
-          alignItems="center"
-          sx={{ cursor: 'pointer' }}
-          onClick={() => navigate('/')}
-        >
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              backgroundColor: 'primary.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mr: 1.5,
-            }}
-          >
-            <Gavel sx={{ color: 'white', fontSize: 24 }} />
-          </Box>
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{
-              fontWeight: 800,
-              background: `linear-gradient(45deg, ${'#00796b'}, ${'#009688'})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
-            AuctionHub
-          </Typography>
-        </Box>
-
-        {/* Search Bar */}
-        <Box
-          component="form"
-          onSubmit={handleSearch}
+      <Container maxWidth="xl">
+        <Toolbar
           sx={{
-            position: 'relative',
-            borderRadius: 50,
-            backgroundColor: alpha('#00796b', 0.05),
-            '&:hover': {
-              backgroundColor: alpha('#00796b', 0.1),
-            },
-            marginLeft: 4,
-            marginRight: 4,
-            width: '100%',
-            maxWidth: 450,
+            py: 1,
+            px: { xs: 2, sm: 4 },
+            minHeight: { xs: 70, md: 80 },
+            borderRadius: '24px',
+            backgroundColor: mode === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(16px)',
+            border: mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.05)',
+            boxShadow: mode === 'dark' ? '0 20px 40px rgba(0, 0, 0, 0.3)' : '0 10px 30px rgba(0, 0, 0, 0.05)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: 0,
+              left: '10%',
+              width: '80%',
+              height: '1px',
+              background: 'linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), transparent)',
+            }
           }}
         >
+          {/* Logo */}
           <Box
-            sx={{
-              padding: '0 16px',
-              height: '100%',
-              position: 'absolute',
-              pointerEvents: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            display="flex"
+            alignItems="center"
+            sx={{ cursor: 'pointer', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.02)' } }}
+            onClick={() => navigate('/')}
           >
-            <SearchIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+            <Box
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mr: 2,
+                boxShadow: '0 8px 16px rgba(16, 185, 129, 0.25)',
+              }}
+            >
+              <Gavel sx={{ color: 'white', fontSize: 26 }} />
+            </Box>
+            <Typography
+              variant="h4"
+              component="div"
+              className="emerald-gradient-text"
+              sx={{
+                fontWeight: 900,
+                fontSize: { xs: '1.2rem', md: '1.6rem' },
+                letterSpacing: '-0.03em',
+              }}
+            >
+              AuctionHub
+            </Typography>
           </Box>
-          <InputBase
-            placeholder="Search auctions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+
+          {/* Search Bar - Hidden on small screens */}
+          <Box
+            component="form"
+            onSubmit={handleSearch}
             sx={{
-              color: 'text.primary',
-              padding: '12px 16px 12px 52px',
+              display: { xs: 'none', lg: 'flex' },
+              position: 'relative',
+              borderRadius: '16px',
+              backgroundColor: mode === 'dark' ? 'rgba(15, 23, 42, 0.6)' : 'rgba(241, 245, 249, 0.9)',
+              border: mode === 'dark' ? '1px solid rgba(148, 163, 184, 0.1)' : '1px solid rgba(16, 185, 129, 0.1)',
               width: '100%',
-              fontSize: '0.95rem',
-              fontWeight: 500,
-              '& input::placeholder': {
-                color: 'text.secondary',
-                opacity: 0.8,
-                fontWeight: 400,
-              },
-            }}
-          />
-        </Box>
-
-        <Box sx={{ flexGrow: 1 }} />
-
-        {/* Navigation Links */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            color="inherit"
-            onClick={() => navigate('/auctions')}
-            sx={{
-              color: isActive('/auctions') ? 'primary.main' : 'text.secondary',
-              fontWeight: isActive('/auctions') ? 700 : 500,
-              fontSize: '0.95rem',
-              py: 1,
-              px: 2,
-              borderRadius: 3,
-              minHeight: 44,
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: alpha('#00796b', 0.08),
+              maxWidth: { md: 300, xl: 450 },
+              transition: 'all 0.3s ease',
+              '&:focus-within': {
+                borderColor: 'rgba(16, 185, 129, 0.5)',
+                boxShadow: '0 0 0 4px rgba(16, 185, 129, 0.1)',
+                width: '100%',
+                maxWidth: { md: 400, xl: 550 },
               },
             }}
           >
-            Browse
-          </Button>
+            <Box
+              sx={{
+                padding: '0 16px',
+                height: '100%',
+                position: 'absolute',
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <SearchIcon sx={{ color: '#94A3B8', fontSize: 20 }} />
+            </Box>
+            <InputBase
+              placeholder="Search auctions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{
+                color: 'text.primary',
+                padding: '12px 16px 12px 52px',
+                width: '100%',
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                '& input::placeholder': {
+                  color: '#64748B',
+                  opacity: 1,
+                },
+              }}
+            />
+          </Box>
 
-          {isAuthenticated ? (
-            <>
-              {hasRole(UserRole.SELLER) && (
-                <Button
-                  color="inherit"
-                  startIcon={<Add sx={{ fontSize: 20 }} />}
-                  onClick={() => navigate('/create-auction')}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
+            {isAuthenticated ? (
+              <>
+                {hasRole(UserRole.SELLER) && (
+                  <NavButton
+                    startIcon={<Add />}
+                    onClick={() => navigate('/create-auction')}
+                    sx={{
+                      backgroundColor: location.pathname === '/create-auction' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                      color: location.pathname === '/create-auction' ? '#10B981' : (mode === 'dark' ? '#94A3B8' : '#475569'),
+                      display: { xs: 'none', md: 'flex' },
+                      mr: 1
+                    }}
+                  >
+                    Start Auction
+                  </NavButton>
+                )}
+                <IconButton
+                  onClick={() => navigate('/my-bids')}
                   sx={{
-                    color: isActive('/create-auction') ? 'primary.main' : 'text.secondary',
-                    fontWeight: isActive('/create-auction') ? 700 : 500,
-                    fontSize: '0.95rem',
-                    py: 1,
-                    px: 2,
-                    borderRadius: 3,
-                    minHeight: 44,
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: alpha('#00796b', 0.08),
-                    },
+                    color: isActive('/my-bids') ? 'primary.main' : '#94A3B8',
+                    display: { xs: 'none', md: 'flex' }
                   }}
                 >
-                  Create
-                </Button>
-              )}
+                  <TrendingUp />
+                </IconButton>
 
-              <Button
-                color="inherit"
-                startIcon={<List sx={{ fontSize: 20 }} />}
-                onClick={() => navigate('/my-bids')}
-                sx={{
-                  color: isActive('/my-bids') ? 'primary.main' : 'text.secondary',
-                  fontWeight: isActive('/my-bids') ? 700 : 500,
-                  fontSize: '0.95rem',
-                  py: 1,
-                  px: 2,
-                  borderRadius: 3,
-                  minHeight: 44,
-                  textTransform: 'none',
-                  '&:hover': {
-                    backgroundColor: alpha('#00796b', 0.08),
-                  },
-                }}
-              >
-                My Bids
-              </Button>
-
-              {/* Notifications */}
-              <IconButton
-                size="large"
-                sx={{
-                  color: 'text.secondary',
-                  width: 44,
-                  height: 44,
-                  '&:hover': {
-                    backgroundColor: alpha('#00796b', 0.08),
-                  },
-                }}
-              >
-                <Badge badgeContent={unreadCount} color="error">
-                  <Notifications sx={{ fontSize: 24 }} />
-                </Badge>
-              </IconButton>
-
-              {/* User Menu */}
-              <IconButton
-                size="large"
-                edge="end"
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleMenuOpen}
-                sx={{
-                  width: 44,
-                  height: 44,
-                  '&:hover': {
-                    backgroundColor: alpha('#00796b', 0.08),
-                  },
-                }}
-              >
-                <Avatar
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                  }}
+                <IconButton
+                  sx={{ color: '#94A3B8' }}
                 >
-                  {user?.firstName?.charAt(0) || user?.username?.charAt(0) || 'U'}
-                </Avatar>
-              </IconButton>
+                  <Badge badgeContent={unreadCount} color="primary" overlap="circular">
+                    <Notifications />
+                  </Badge>
+                </IconButton>
 
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                sx={{ mt: 1.5 }}
-                PaperProps={{
-                  sx: {
-                    borderRadius: 2,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-                    minWidth: 200,
-                    '& .MuiMenuItem-root': {
-                      fontSize: '0.95rem',
-                      py: 1.2,
-                      px: 2,
-                      fontWeight: 500,
-                      '&:hover': {
-                        backgroundColor: alpha('#00796b', 0.08),
-                      },
+                <IconButton
+                  onClick={toggleColorMode}
+                  sx={{ color: '#94A3B8' }}
+                >
+                  {mode === 'dark' ? <LightMode /> : <DarkMode />}
+                </IconButton>
+
+                <IconButton
+                  onClick={handleMenuOpen}
+                  sx={{ p: 0.5, border: '2px solid rgba(16, 185, 129, 0.2)' }}
+                >
+                  <Avatar
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      background: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
+                      fontSize: '1rem',
+                      fontWeight: 800,
+                    }}
+                  >
+                    {user?.firstName?.charAt(0) || 'U'}
+                  </Avatar>
+                </IconButton>
+
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  sx={{ mt: 1.5 }}
+                  PaperProps={{
+                    sx: {
+                      borderRadius: '20px',
+                      backgroundColor: mode === 'dark' ? '#1E293B' : '#FFFFFF',
+                      border: mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.05)',
+                      minWidth: 220,
+                      p: 1,
                     }
-                  }
-                }}
-              >
-                <MenuItem onClick={() => { navigate('/profile'); handleMenuClose(); }}>
-                  <Person sx={{ mr: 1.5, fontSize: 20 }} />
-                  Profile
-                </MenuItem>
-                {hasRole(UserRole.SELLER) && [
-                  <MenuItem key="my-auctions" onClick={() => { navigate('/my-auctions'); handleMenuClose(); }}>
-                    <Gavel sx={{ mr: 1.5, fontSize: 20 }} />
-                    My Auctions
-                  </MenuItem>,
-                  <MenuItem key="analytics" onClick={() => { navigate('/analytics'); handleMenuClose(); }}>
-                    <TrendingUp sx={{ mr: 1.5, fontSize: 20 }} />
-                    Analytics
+                  }}
+                >
+                  <MenuItem onClick={() => { navigate('/profile'); handleMenuClose(); }} sx={{ borderRadius: '12px', mb: 0.5 }}>
+                    <Person sx={{ mr: 2, color: 'primary.main' }} /> Profile Settings
                   </MenuItem>
-                ]}
-                <MenuItem onClick={() => { navigate('/watchlist'); handleMenuClose(); }}>
-                  <Favorite sx={{ mr: 1.5, fontSize: 20 }} />
-                  Watchlist
-                </MenuItem>
-                <MenuItem onClick={handleLogout}>
-                  <Logout sx={{ mr: 1.5, fontSize: 20 }} />
-                  Logout
-                </MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/login')}
-                sx={{
-                  color: 'primary.main',
-                  borderColor: 'primary.main',
-                  fontSize: '0.95rem',
-                  py: 1,
-                  px: 2.5,
-                  borderRadius: 3,
-                  minHeight: 44,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  borderWidth: 2,
-                  '&:hover': {
-                    borderColor: 'primary.dark',
-                    backgroundColor: alpha('#00796b', 0.05),
-                    borderWidth: 2,
-                  },
-                }}
-              >
-                Login
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => navigate('/register')}
-                sx={{
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  fontSize: '0.95rem',
-                  py: 1,
-                  px: 2.5,
-                  borderRadius: 3,
-                  minHeight: 44,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  boxShadow: '0 4px 12px rgba(0, 121, 107, 0.25)',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                    boxShadow: '0 6px 16px rgba(0, 121, 107, 0.35)',
-                  },
-                }}
-              >
-                Sign Up
-              </Button>
-            </>
-          )}
-        </Box>
-      </Toolbar>
+                  {hasRole(UserRole.SELLER) && (
+                    <MenuItem onClick={() => { navigate('/my-auctions'); handleMenuClose(); }} sx={{ borderRadius: '12px', mb: 0.5 }}>
+                      <Gavel sx={{ mr: 2, color: 'secondary.main' }} /> My Auctions
+                    </MenuItem>
+                  )}
+                  <MenuItem onClick={() => { navigate('/watchlist'); handleMenuClose(); }} sx={{ borderRadius: '12px', mb: 0.5 }}>
+                    <Favorite sx={{ mr: 2, color: '#F43F5E' }} /> Watchlist
+                  </MenuItem>
+                  <Divider sx={{ my: 1, opacity: 0.1 }} />
+                  <MenuItem onClick={handleLogout} sx={{ borderRadius: '12px', color: '#F43F5E' }}>
+                    <Logout sx={{ mr: 2 }} /> Sign Out
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  onClick={() => navigate('/login')}
+                  sx={{ color: mode === 'dark' ? '#F8FAFC' : 'text.primary', fontWeight: 700 }}
+                >
+                  Login
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/register')}
+                >
+                  Join Us
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </Toolbar>
+      </Container>
     </AppBar>
   );
 };

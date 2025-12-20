@@ -1,25 +1,25 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Box } from '@mui/material';
+import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
-import modernTheme from './theme/modernTheme';
+import { ColorModeProvider, useColorMode } from './contexts/ThemeContext';
+import { getModernTheme } from './theme/modernTheme';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ModernNavbar from './components/layout/ModernNavbar';
 import ModernHomePage from './pages/ModernHomePage';
-import LoginPage from './pages/auth/LoginPage';  // Changed from ModernLoginPage
+import ModernLoginPage from './pages/auth/ModernLoginPage';
 import ModernRegisterPage from './pages/auth/ModernRegisterPage';
 import ModernAuctionListPage from './pages/auctions/ModernAuctionListPage';
-import ModernAuctionDetailPage from './pages/auctions/ModernAuctionDetailPage';
+import AuctionDetailPage from './pages/auctions/AuctionDetailPage';
 import CreateAuctionPage from './pages/auctions/CreateAuctionPage';
 import EditAuctionPage from './pages/auctions/EditAuctionPage';
 import UserProfilePage from './pages/user/UserProfilePage';
 import MyAuctionsPage from './pages/user/MyAuctionsPage';
 import MyBidsPage from './pages/user/MyBidsPage';
 import WatchlistPage from './pages/user/WatchlistPage';
-import SellerAnalyticsPage from './pages/user/SellerAnalyticsPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route component
@@ -61,14 +61,14 @@ const AppRoutes: React.FC = () => {
           <Route path="/" element={<ModernHomePage />} />
           <Route
             path="/login"
-            element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}  // Changed from ModernLoginPage
+            element={isAuthenticated ? <Navigate to="/" replace /> : <ModernLoginPage />}
           />
           <Route
             path="/register"
             element={isAuthenticated ? <Navigate to="/" replace /> : <ModernRegisterPage />}
           />
           <Route path="/auctions" element={<ModernAuctionListPage />} />
-          <Route path="/auctions/:id" element={<ModernAuctionDetailPage />} />
+          <Route path="/auctions/:id" element={<AuctionDetailPage />} />
 
           {/* Protected Routes */}
           <Route
@@ -112,14 +112,6 @@ const AppRoutes: React.FC = () => {
             }
           />
           <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute requiredRole="SELLER">
-                <SellerAnalyticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/edit-auction/:id"
             element={
               <ProtectedRoute requiredRole="SELLER">
@@ -136,22 +128,15 @@ const AppRoutes: React.FC = () => {
   );
 };
 
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
-
-// ... existing imports
-
-const App: React.FC = () => {
-  const initialOptions = {
-    clientId: "test", // REPLACE WITH YOUR REAL CLIENT ID
-    currency: "USD",
-    intent: "capture",
-  };
+const AppContent: React.FC = () => {
+  const { mode } = useColorMode();
+  const theme = React.useMemo(() => getModernTheme(mode), [mode]);
 
   return (
-    <ThemeProvider theme={modernTheme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <PayPalScriptProvider options={initialOptions}>
+        <PayPalScriptProvider options={{ clientId: "test", currency: "USD", intent: "capture" }}>
           <Router>
             <AuthProvider>
               <AppRoutes />
@@ -160,6 +145,14 @@ const App: React.FC = () => {
         </PayPalScriptProvider>
       </LocalizationProvider>
     </ThemeProvider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ColorModeProvider>
+      <AppContent />
+    </ColorModeProvider>
   );
 };
 

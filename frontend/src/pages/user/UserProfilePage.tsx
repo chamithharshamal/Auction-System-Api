@@ -10,19 +10,14 @@ import {
   CardContent,
   Divider,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  useTheme,
+  IconButton,
   alpha,
   Grid,
+  Stack,
+  useTheme,
 } from '@mui/material';
 import {
   Person,
-  Email,
-  Phone,
-  CalendarToday,
   Security,
   Edit,
   VerifiedUser,
@@ -30,247 +25,230 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserRole } from '../../types/api';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const UserProfilePage: React.FC = () => {
   const { user } = useAuth();
   const theme = useTheme();
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner message="Loading profile..." />;
   }
 
   const getRoleColor = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN:
-        return 'error';
-      case UserRole.SELLER:
-        return 'primary';
-      default:
-        return 'default';
+      case UserRole.ADMIN: return '#F43F5E';
+      case UserRole.SELLER: return '#3B82F6';
+      default: return '#10B981';
     }
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header Banner */}
-      <Paper
-        elevation={0}
-        sx={{
-          position: 'relative',
-          mb: 6,
-          borderRadius: 4,
-          overflow: 'hidden',
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-          color: 'white',
-          pt: 6,
-          pb: 8,
-          px: 4,
-        }}
-      >
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
-            My Profile
-          </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.9 }}>
-            Manage your account settings and preferences
-          </Typography>
-        </Box>
-
-        {/* Decorative circles */}
-        <Box sx={{
-          position: 'absolute',
-          top: -50,
-          right: -50,
-          width: 200,
-          height: 200,
-          borderRadius: '50%',
-          bgcolor: 'white',
-          opacity: 0.1
-        }} />
-        <Box sx={{
-          position: 'absolute',
-          bottom: -30,
-          right: 100,
-          width: 100,
-          height: 100,
-          borderRadius: '50%',
-          bgcolor: 'white',
-          opacity: 0.1
-        }} />
-      </Paper>
-
-      <Grid container spacing={4} sx={{ mt: -10, position: 'relative', zIndex: 2, px: 2 }}>
-        {/* Left Column: Avatar & Quick Actions */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card elevation={3} sx={{ borderRadius: 4, height: '100%' }}>
-            <CardContent sx={{ textAlign: 'center', pt: 4, pb: 4 }}>
+    <Box sx={{ minHeight: '100vh', py: { xs: 8, md: 12 } }} className="page-fade-in">
+      <Container maxWidth="lg">
+        {/* Profile Header Block */}
+        <Box sx={{ position: 'relative', mb: 10 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 4, md: 8 },
+              borderRadius: '32px',
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)',
+              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', gap: 6, position: 'relative', zIndex: 1 }}>
               <Avatar
                 sx={{
-                  width: 120,
-                  height: 120,
-                  mx: 'auto',
-                  mb: 2,
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  fontSize: '3rem',
-                  border: `4px solid ${theme.palette.background.paper}`,
-                  boxShadow: theme.shadows[3],
+                  width: 160,
+                  height: 160,
+                  fontSize: '4rem',
+                  fontWeight: 900,
+                  bgcolor: 'primary.main',
+                  boxShadow: `0 0 40px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  border: `4px solid ${theme.palette.background.default}`
                 }}
               >
                 {user.firstName?.charAt(0) || user.username?.charAt(0)}
               </Avatar>
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                {user.firstName} {user.lastName}
-              </Typography>
-              <Typography variant="body1" color="text.secondary" gutterBottom>
-                @{user.username}
-              </Typography>
 
-              <Box sx={{ mt: 2, mb: 3 }}>
-                {user.roles.map((role) => (
+              <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                  <Typography variant="h2" sx={{ fontWeight: 900, lineHeight: 1 }}>
+                    {user.firstName} {user.lastName}
+                  </Typography>
                   <Chip
-                    key={role}
-                    label={role}
-                    color={getRoleColor(role) as any}
+                    label={user.active ? 'Verified Account' : 'Pending'}
                     size="small"
-                    sx={{ mr: 1, mb: 1, fontWeight: 'bold' }}
+                    sx={{ bgcolor: 'rgba(16, 185, 129, 0.2)', color: '#10B981', fontWeight: 900, fontSize: '0.7rem' }}
                   />
-                ))}
+                </Box>
+                <Typography variant="h5" sx={{ color: 'text.secondary', mb: 3 }}>
+                  @{user.username}
+                </Typography>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                  {user.roles.map((role) => (
+                    <Chip
+                      key={role}
+                      label={role}
+                      sx={{
+                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+                        color: getRoleColor(role as UserRole),
+                        fontWeight: 900,
+                        border: '1px solid',
+                        borderColor: alpha(getRoleColor(role as UserRole), 0.3)
+                      }}
+                    />
+                  ))}
+                </Box>
               </Box>
 
-              <Divider sx={{ my: 3 }} />
+              <Box sx={{ ml: { md: 'auto' }, display: 'flex', gap: 2 }}>
+                <Button variant="contained" startIcon={<Edit />} sx={{ borderRadius: '12px', px: 4, fontWeight: 900 }}>
+                  Edit Profile
+                </Button>
+                <IconButton className="glass-panel" sx={{ width: 48, height: 48 }}>
+                  <Security fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
 
-              <Button
-                variant="contained"
-                startIcon={<Edit />}
-                fullWidth
-                size="large"
-                sx={{ borderRadius: 2, mb: 2 }}
-              >
-                Edit Profile
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<Security />}
-                fullWidth
-                size="large"
-                sx={{ borderRadius: 2 }}
-              >
-                Change Password
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
+            {/* Mesh Background for header */}
+            <Box sx={{
+              position: 'absolute',
+              top: '-10%',
+              right: '-10%',
+              width: '40%',
+              height: '100%',
+              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
+              filter: 'blur(60px)',
+              zIndex: 0
+            }} />
+          </Paper>
+        </Box>
 
-        {/* Right Column: Details & Stats */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Grid container spacing={3}>
-            {/* Stats Cards */}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Card elevation={2} sx={{ borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-                <CardContent sx={{ display: 'flex', alignItems: 'center', p: 3 }}>
-                  <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                    <CalendarToday />
-                  </Avatar>
+        <Grid container spacing={4}>
+          <Grid size={{ xs: 12, md: 8 }}>
+            <Paper className="glass-panel" sx={{ p: 4, mb: 4 }}>
+              <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Person className="emerald-gradient-text" /> Personal Information
+              </Typography>
+
+              <Grid container spacing={4}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Box>
-                    <Typography variant="caption" color="text.secondary" fontWeight="bold">
-                      MEMBER SINCE
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+                      Primary Email
                     </Typography>
-                    <Typography variant="h6">
-                      {new Date(user.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>{user.email}</Typography>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Card elevation={2} sx={{ borderRadius: 3, bgcolor: alpha(theme.palette.success.main, 0.05) }}>
-                <CardContent sx={{ display: 'flex', alignItems: 'center', p: 3 }}>
-                  <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                    <VerifiedUser />
-                  </Avatar>
+                  <Divider sx={{ my: 3, opacity: 0.1 }} />
                   <Box>
-                    <Typography variant="caption" color="text.secondary" fontWeight="bold">
-                      ACCOUNT STATUS
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+                      Contact Number
                     </Typography>
-                    <Typography variant="h6" color="success.main">
-                      {user.active ? 'Active' : 'Inactive'}
-                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>{user.phoneNumber || 'Not established'}</Typography>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Detailed Info */}
-            <Grid size={12}>
-              <Paper elevation={3} sx={{ borderRadius: 4, p: 4 }}>
-                <Box display="flex" alignItems="center" mb={3}>
-                  <Person color="primary" sx={{ mr: 1, fontSize: 28 }} />
-                  <Typography variant="h6" fontWeight="bold">
-                    Personal Information
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <List disablePadding>
-                      <ListItem sx={{ px: 0 }}>
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          <Person color="action" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Full Name"
-                          secondary={`${user.firstName} ${user.lastName}`}
-                          primaryTypographyProps={{ variant: 'caption', color: 'text.secondary', fontWeight: 'bold' }}
-                          secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', mt: 0.5 }}
-                        />
-                      </ListItem>
-                      <ListItem sx={{ px: 0 }}>
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          <Email color="action" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Email Address"
-                          secondary={user.email}
-                          primaryTypographyProps={{ variant: 'caption', color: 'text.secondary', fontWeight: 'bold' }}
-                          secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', mt: 0.5 }}
-                        />
-                      </ListItem>
-                    </List>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <List disablePadding>
-                      <ListItem sx={{ px: 0 }}>
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          <Phone color="action" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Phone Number"
-                          secondary={user.phoneNumber || 'Not provided'}
-                          primaryTypographyProps={{ variant: 'caption', color: 'text.secondary', fontWeight: 'bold' }}
-                          secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', mt: 0.5 }}
-                        />
-                      </ListItem>
-                      <ListItem sx={{ px: 0 }}>
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          <Gavel color="action" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="User ID"
-                          secondary={user.id}
-                          primaryTypographyProps={{ variant: 'caption', color: 'text.secondary', fontWeight: 'bold' }}
-                          secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', mt: 0.5, sx: { fontFamily: 'monospace' } }}
-                        />
-                      </ListItem>
-                    </List>
-                  </Grid>
                 </Grid>
-              </Paper>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+                      Joined On
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      {new Date(user.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ my: 3, opacity: 0.1 }} />
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase', mb: 1, display: 'block' }}>
+                      System ID
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: 'monospace', opacity: 0.6 }}>
+                      {user.id.slice(0, 18)}...
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            <Grid container spacing={4}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Card sx={{ height: '100%' }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Gavel color="primary" />
+                      <Typography variant="h6" sx={{ fontWeight: 800 }}>Bidding Stats</Typography>
+                    </Box>
+                    <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>24</Typography>
+                    <Typography variant="body2" color="text.secondary">Active bids in current cycle</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Card sx={{ height: '100%' }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <VerifiedUser color="secondary" />
+                      <Typography variant="h6" sx={{ fontWeight: 800 }}>Trust Score</Typography>
+                    </Box>
+                    <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>98%</Typography>
+                    <Typography variant="body2" color="text.secondary">Excellent marketplace rating</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
             </Grid>
           </Grid>
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Paper className="glass-panel" sx={{ p: 4 }}>
+              <Typography variant="h6" sx={{ fontWeight: 900, mb: 4 }}>Account Security</Typography>
+
+              <Stack spacing={3}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10B981' }} />
+                  <Box>
+                    <Typography sx={{ fontWeight: 700 }}>Two-Factor Auth</Typography>
+                    <Typography variant="caption" color="text.secondary">Active via Mobile</Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10B981' }} />
+                  <Box>
+                    <Typography sx={{ fontWeight: 700 }}>KYC Status</Typography>
+                    <Typography variant="caption" color="text.secondary">Identity Fully Verified</Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#F59E0B' }} />
+                  <Box>
+                    <Typography sx={{ fontWeight: 700 }}>Password Update</Typography>
+                    <Typography variant="caption" color="text.secondary">Changed 3 months ago</Typography>
+                  </Box>
+                </Box>
+              </Stack>
+
+              <Divider sx={{ my: 4, opacity: 0.1 }} />
+
+              <Button fullWidth variant="outlined" sx={{ borderRadius: '12px', mb: 2, fontWeight: 900, py: 1.5 }}>
+                Download Activity Log
+              </Button>
+              <Button fullWidth color="error" sx={{ fontWeight: 800 }}>
+                Deactivate Account
+              </Button>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

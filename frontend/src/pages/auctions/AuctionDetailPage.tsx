@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
-  Card,
-  CardContent,
   CardMedia,
   Typography,
   Button,
@@ -13,7 +11,6 @@ import {
   Divider,
   List,
   ListItem,
-  ListItemText,
   Avatar,
   Paper,
   Tabs,
@@ -24,13 +21,13 @@ import {
   DialogContent,
   DialogActions,
   Grid,
+  useTheme,
 } from '@mui/material';
 import {
   Gavel,
-  Person,
-  Schedule,
   Share,
   FavoriteBorder,
+  TrendingUp,
 } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import type { AuctionItem, Bid, PlaceBidRequest } from '../../types/api';
@@ -45,6 +42,7 @@ import { webSocketService } from '../../services/webSocketService';
 const AuctionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
+  const theme = useTheme();
   const [auction, setAuction] = useState<AuctionItem | null>(null);
   const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,48 +56,30 @@ const AuctionDetailPage: React.FC = () => {
   useEffect(() => {
     if (id) {
       loadAuctionDetails();
-
-      // Subscribe to real-time bid updates
       webSocketService.connect();
       webSocketService.subscribeToAuction(id, (newBid) => {
-        // Update auction details
         setAuction(prev => prev ? {
           ...prev,
           currentPrice: newBid.amount,
           totalBids: (prev.totalBids || 0) + 1
         } : null);
-
-        // Update bids list
         setBids(prev => [newBid, ...prev].slice(0, 10));
-
-        // Update chart
         setPriceTrends(prev => [...prev, {
           amount: newBid.amount,
           timestamp: newBid.timestamp,
           bidderName: `${newBid.bidder.firstName} ${newBid.bidder.lastName}`
         }]);
-
-        setSuccess(`New bid received: ${formatPrice(newBid.amount)}!`);
+        setSuccess(`New bid: ${formatPrice(newBid.amount)}!`);
       });
     }
-
-    return () => {
-      // We don't necessarily want to disconnect the whole socket if other pages use it,
-      // but we might want to unsubscribe if the service supported it.
-      // For now, just leaving it connected is standard for small apps.
-    };
   }, [id]);
 
   const loadAuctionDetails = async () => {
     try {
       setLoading(true);
       setError('');
-
-      // Load auction details first
       const auctionData = await auctionService.getAuctionById(id!);
       setAuction(auctionData);
-
-      // Then try to load bids
       try {
         const [bidsData, trendsData] = await Promise.all([
           bidService.getRecentBidsForAuction(id!, 10),
@@ -108,13 +88,11 @@ const AuctionDetailPage: React.FC = () => {
         setBids(bidsData);
         setPriceTrends(trendsData);
       } catch (bidError) {
-        console.warn('No bids found or error loading charts:', bidError);
         setBids([]);
         setPriceTrends([]);
       }
     } catch (error: any) {
-      setError('Failed to load auction details');
-      console.error('Error loading auction details:', error);
+      setError('Loading failed');
     } finally {
       setLoading(false);
     }
@@ -122,364 +100,262 @@ const AuctionDetailPage: React.FC = () => {
 
   const handlePlaceBid = async () => {
     if (!auction || !user || !bidAmount) return;
-
     try {
       const bidData: PlaceBidRequest = {
         bidderId: user.id,
         amount: parseFloat(bidAmount),
       };
-
       await bidService.placeBid(auction.id, bidData);
-      setSuccess('Bid placed successfully!');
+      setSuccess('Bid successful!');
       setBidDialogOpen(false);
       setBidAmount('');
-      loadAuctionDetails(); // Refresh auction data
+      loadAuctionDetails();
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to place bid');
+      setError(error.response?.data?.message || 'Bid failed');
     }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
   };
 
   const getTimeRemaining = (endDate: string) => {
     const now = new Date().getTime();
     const end = new Date(endDate).getTime();
     const diff = end - now;
-
     if (diff <= 0) return 'Ended';
-
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) return `${days} days ${hours} hours left`;
-    if (hours > 0) return `${hours} hours ${minutes} minutes left`;
-    return `${minutes} minutes left`;
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return 'success';
-      case 'ENDED':
-        return 'default';
-      case 'CANCELLED':
-        return 'error';
-      default:
-        return 'warning';
-    }
-  };
-
-  if (loading) {
-    return <LoadingSpinner message="Loading auction details..." />;
-  }
-
-  if (!auction) {
-    return (
-      <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 3, md: 4 } }}>
-        <Alert severity="error">Auction not found</Alert>
-      </Container>
-    );
-  }
+  if (loading) return <LoadingSpinner message="Loading details..." />;
+  if (!auction) return <ErrorAlert open={true} message="Missing auction" onClose={() => { }} />;
 
   return (
-    <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 3, md: 4 } }}>
-      {error && (
-        <ErrorAlert
-          open={!!error}
-          message={error}
-          onClose={() => setError(null)}
-        />
-      )}
-      {success && (
-        <ErrorAlert
-          open={!!success}
-          message={success}
-          onClose={() => setSuccess(null)}
-          severity="success"
-        />
-      )}
+    <Box sx={{ py: { xs: 8, md: 12 } }} className="page-fade-in">
+      <Container maxWidth="xl">
+        {error && <ErrorAlert open={!!error} message={error} onClose={() => setError(null)} />}
+        {success && <ErrorAlert open={!!success} message={success} onClose={() => setSuccess(null)} severity="success" />}
 
-      <Grid container spacing={4}>
-        {/* Image Gallery */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            {auction.imageUrls && auction.imageUrls.length > 0 ? (
+        <Grid container spacing={8}>
+          {/* Visuals */}
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Box sx={{ position: 'relative', borderRadius: '32px', overflow: 'hidden', mb: 6 }}>
               <CardMedia
                 component="img"
-                height="400"
-                image={auction.imageUrls[0]}
-                alt={auction.title}
+                image={auction.imageUrls?.[0] || 'https://images.unsplash.com/photo-1579546678183-a84fe535194d'}
+                sx={{ height: { xs: 400, md: 600 }, objectFit: 'cover' }}
               />
-            ) : (
-              <Box
-                sx={{
-                  height: 400,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'grey.100',
-                }}
-              >
-                <Typography variant="h6" color="text.secondary">
-                  No Image Available
-                </Typography>
+              <Box sx={{ position: 'absolute', top: 24, left: 24, display: 'flex', gap: 2 }}>
+                <Chip label={auction.status} sx={{ fontWeight: 900, bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(12px)', color: '#10B981' }} />
+                <Chip label={auction.category} sx={{ fontWeight: 900, bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(12px)', color: '#3B82F6' }} />
               </Box>
-            )}
-          </Card>
+            </Box>
 
-          {/* Price Trend Chart - Added for excitement! */}
-          <Box sx={{ mt: 3 }}>
-            <PriceTrendsChart
-              data={priceTrends}
-              startingPrice={auction.startingPrice}
-            />
-          </Box>
-        </Grid>
+            <Paper className="glass-panel" sx={{ p: 4 }}>
+              <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <TrendingUp color="primary" /> Price Trends
+              </Typography>
+              <PriceTrendsChart data={priceTrends} startingPrice={auction.startingPrice} />
+            </Paper>
+          </Grid>
 
-        {/* Auction Details */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                <Typography variant="h4" component="h1">
-                  {auction.title}
-                </Typography>
-                <Box display="flex" gap={1}>
-                  <IconButton>
-                    <Share />
-                  </IconButton>
-                  <IconButton>
-                    <FavoriteBorder />
-                  </IconButton>
+          {/* Controls */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Box sx={{ position: 'sticky', top: 120 }}>
+              <Typography variant="h2" sx={{ fontWeight: 900, mb: 2, lineHeight: 1.1 }}>
+                {auction.title}
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+                <Avatar sx={{ width: 48, height: 48, border: '2px solid', borderColor: 'primary.main' }}>
+                  {auction.seller.firstName?.[0]}
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{auction.seller.firstName} {auction.seller.lastName}</Typography>
+                  <Typography variant="caption" color="text.secondary">Trusted Collector</Typography>
+                </Box>
+                <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+                  <IconButton className="glass-panel" sx={{ width: 44, height: 44 }}><Share fontSize="small" /></IconButton>
+                  <IconButton className="glass-panel" sx={{ width: 44, height: 44 }}><FavoriteBorder fontSize="small" /></IconButton>
                 </Box>
               </Box>
 
-              <Chip
-                label={auction.status}
-                color={getStatusColor(auction.status) as any}
-                sx={{ mb: 2 }}
-              />
+              <Divider sx={{ mb: 4 }} />
 
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                {auction.description}
-              </Typography>
-
-              <Divider sx={{ my: 2 }} />
-
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h3" color="primary.main">
-                  {formatPrice(auction.currentPrice)}
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                  {auction.totalBids} bids
-                </Typography>
-              </Box>
-
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Starting Price: {formatPrice(auction.startingPrice)}
-                {auction.reservePrice && (
-                  <span> • Reserve Price: {formatPrice(auction.reservePrice)}</span>
-                )}
-              </Typography>
-
-              <Box display="flex" alignItems="center" gap={1} mb={3}>
-                <Schedule color="action" />
-                <Typography variant="body1">
-                  {getTimeRemaining(auction.endDate)}
-                </Typography>
-              </Box>
-
-              <Box display="flex" alignItems="center" gap={1} mb={3}>
-                <Person color="action" />
-                <Typography variant="body1">
-                  Seller: {auction.seller.firstName} {auction.seller.lastName}
-                </Typography>
-              </Box>
-
-              {isAuthenticated && auction.status === 'ACTIVE' && user?.id !== auction.seller.id && (
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  startIcon={<Gavel />}
-                  onClick={() => setBidDialogOpen(true)}
-                  sx={{ py: 1.5 }}
-                >
-                  Place Bid
-                </Button>
-              )}
-
-              {auction.status === 'ACTIVE' && (
-                (!isAuthenticated || user?.id === auction.seller.id) ? (
-                  <Alert severity="info">
-                    {user?.id === auction.seller.id
-                      ? "You can't bid on your own auction"
-                      : 'You must be logged in to place a bid'}
-                  </Alert>
-                ) : null
-              )}
-
-              {auction.status === 'ENDED' && (
-                <Alert severity="info">
-                  This auction has ended
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Tabs Section */}
-      <Box sx={{ mt: 4 }}>
-        <Paper>
-          <Tabs value={tabValue} onChange={(_e, newValue) => setTabValue(newValue)}>
-            <Tab label="Bid History" />
-            <Tab label="Auction Details" />
-            <Tab label="Seller Info" />
-          </Tabs>
-
-          <Box sx={{ p: 3 }}>
-            {tabValue === 0 && (
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Recent Bids ({bids.length})
-                </Typography>
-                {bids.length > 0 ? (
-                  <List>
-                    {bids.map((bid) => (
-                      <ListItem key={bid.id} divider>
-                        <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-                          {bid.bidder.firstName?.charAt(0) || bid.bidder.username?.charAt(0)}
-                        </Avatar>
-                        <ListItemText
-                          primary={
-                            <Box display="flex" justifyContent="space-between">
-                              <Typography variant="subtitle1">
-                                {bid.bidder.firstName} {bid.bidder.lastName}
-                              </Typography>
-                              <Typography variant="h6" color="primary.main">
-                                {formatPrice(bid.amount)}
-                              </Typography>
-                            </Box>
-                          }
-                          secondary={new Date(bid.timestamp).toLocaleString()}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography color="text.secondary">
-                    No bids yet. Be the first to bid!
-                  </Typography>
-                )}
-              </Box>
-            )}
-
-            {tabValue === 1 && (
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Auction Information
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Category
-                    </Typography>
-                    <Typography variant="body1">{auction.category}</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Start Date
-                    </Typography>
-                    <Typography variant="body1">
-                      {new Date(auction.startDate).toLocaleString()}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      End Date
-                    </Typography>
-                    <Typography variant="body1">
-                      {new Date(auction.endDate).toLocaleString()}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Created
-                    </Typography>
-                    <Typography variant="body1">
-                      {new Date(auction.createdAt).toLocaleString()}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {tabValue === 2 && (
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Seller Information
-                </Typography>
-                <Box display="flex" alignItems="center" gap={2} mb={2}>
-                  <Avatar sx={{ bgcolor: 'primary.main' }}>
-                    {auction.seller.firstName?.charAt(0) || auction.seller.username?.charAt(0)}
-                  </Avatar>
+              <Paper className="glass-panel" sx={{ p: 4, mb: 4, border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 3 }}>
                   <Box>
-                    <Typography variant="subtitle1">
-                      {auction.seller.firstName} {auction.seller.lastName}
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase' }}>Current Price</Typography>
+                    <Typography variant="h1" className="emerald-gradient-text" sx={{ fontWeight: 900 }}>
+                      {formatPrice(auction.currentPrice)}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      @{auction.seller.username}
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase' }}>Time Left</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#F43F5E' }}>
+                      {getTimeRemaining(auction.endDate)}
                     </Typography>
                   </Box>
                 </Box>
-                <Typography variant="body2" color="text.secondary">
-                  Member since {new Date(auction.seller.createdAt).toLocaleDateString()}
-                </Typography>
+
+                <Box sx={{
+                  bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.4)' : 'rgba(241, 245, 249, 0.6)',
+                  borderRadius: '16px',
+                  p: 2,
+                  mb: 4,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'}`
+                }}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Starting</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{formatPrice(auction.startingPrice)}</Typography>
+                  </Box>
+                  <Box sx={{ borderLeft: `1px solid ${theme.palette.divider}`, pl: 4 }}>
+                    <Typography variant="caption" color="text.secondary">Bids</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{auction.totalBids || 0} Total</Typography>
+                  </Box>
+                </Box>
+
+                {isAuthenticated && auction.status === 'ACTIVE' && user?.id !== auction.seller.id ? (
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                    startIcon={<Gavel />}
+                    onClick={() => setBidDialogOpen(true)}
+                    sx={{
+                      height: 64,
+                      fontSize: '1.2rem',
+                      fontWeight: 900,
+                      borderRadius: '16px',
+                      textTransform: 'none',
+                      boxShadow: '0 8px 32px rgba(16, 185, 129, 0.4)'
+                    }}
+                  >
+                    Join Bidding
+                  </Button>
+                ) : (
+                  <Alert severity="info" sx={{ borderRadius: '16px', bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                    {auction.status === 'ENDED' ? 'Auction Ended' :
+                      user?.id === auction.seller.id ? 'Watching your item' : 'Join to place a bid'}
+                  </Alert>
+                )}
+              </Paper>
+
+              <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
+                {auction.description}
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+
+        {/* Info Area */}
+        <Box sx={{ mt: 10 }}>
+          <Tabs
+            value={tabValue}
+            onChange={(_e, v) => setTabValue(v)}
+            sx={{
+              mb: 4,
+              '& .MuiTabs-indicator': { height: 4, borderRadius: 2 },
+              '& .MuiTab-root': { fontWeight: 900, fontSize: '1rem', px: 4 }
+            }}
+          >
+            <Tab label="Bid History" />
+            <Tab label="Details" />
+            <Tab label="About Seller" />
+          </Tabs>
+
+          <Box className="glass-panel" sx={{ p: 4 }}>
+            {tabValue === 0 && (
+              <List sx={{ p: 0 }}>
+                {bids.length > 0 ? bids.map((bid, i) => (
+                  <ListItem key={bid.id} sx={{
+                    borderRadius: '16px',
+                    mb: 1,
+                    bgcolor: i === 0 ? 'rgba(16, 185, 129, 0.05)' : 'transparent',
+                    border: i === 0 ? '1px solid rgba(16, 185, 129, 0.2)' : 'none'
+                  }}>
+                    <Avatar sx={{ mr: 2, bgcolor: 'primary.main', fontWeight: 900 }}>{bid.bidder.firstName?.[0]}</Avatar>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography sx={{ fontWeight: 800 }}>{bid.bidder.firstName} {bid.bidder.lastName}</Typography>
+                      <Typography variant="caption" color="text.secondary">{new Date(bid.timestamp).toLocaleString()}</Typography>
+                    </Box>
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: i === 0 ? 'primary.main' : 'text.primary' }}>
+                      {formatPrice(bid.amount)}
+                    </Typography>
+                  </ListItem>
+                )) : (
+                  <Box sx={{ textAlign: 'center', py: 6 }}>
+                    <Typography color="text.secondary">No bids detected in the history.</Typography>
+                  </Box>
+                )}
+              </List>
+            )}
+
+            {tabValue === 1 && (
+              <Grid container spacing={3}>
+                {[
+                  { label: 'Category', value: auction.category },
+                  { label: 'Start Date', value: new Date(auction.startDate).toLocaleString() },
+                  { label: 'End Date', value: new Date(auction.endDate).toLocaleString() },
+                  { label: 'ID', value: auction.id.slice(0, 12) + '...' }
+                ].map((item) => (
+                  <Grid size={{ xs: 6, md: 3 }} key={item.label}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase' }}>{item.label}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>{item.value}</Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+
+            {tabValue === 2 && (
+              <Box sx={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <Avatar sx={{ width: 80, height: 80, fontSize: '2rem', bgcolor: 'primary.main' }}>{auction.seller.firstName?.[0]}</Avatar>
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 800 }}>{auction.seller.firstName} {auction.seller.lastName}</Typography>
+                  <Typography color="text.secondary" sx={{ mb: 1 }}>@{auction.seller.username}</Typography>
+                  <Typography variant="body2">Member since {new Date(auction.seller.createdAt).toLocaleDateString()}</Typography>
+                </Box>
               </Box>
             )}
           </Box>
-        </Paper>
-      </Box>
+        </Box>
+      </Container>
 
-      {/* Bid Dialog */}
-      <Dialog open={bidDialogOpen} onClose={() => setBidDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Place a Bid</DialogTitle>
+      <Dialog open={bidDialogOpen} onClose={() => setBidDialogOpen(false)} PaperProps={{ className: 'glass-panel', sx: { p: 2, borderRadius: '24px' } }}>
+        <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', pb: 1 }}>Place Bid</DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Current highest bid: {formatPrice(auction.currentPrice)}
-          </Typography>
+          <Typography sx={{ mb: 3, color: 'text.secondary' }}>Current High: <b style={{ color: theme.palette.primary.main }}>{formatPrice(auction.currentPrice)}</b></Typography>
           <TextField
             autoFocus
-            margin="dense"
+            fullWidth
             label="Your Bid Amount"
             type="number"
-            fullWidth
-            variant="outlined"
             value={bidAmount}
             onChange={(e) => setBidAmount(e.target.value)}
-            inputProps={{ min: auction.currentPrice + 1, step: 0.01 }}
-            helperText={`Minimum bid: ${formatPrice(auction.currentPrice + 1)}`}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            helperText={`Min possible: ${formatPrice(auction.currentPrice + 1)}`}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBidDialogOpen(false)}>Cancel</Button>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setBidDialogOpen(false)} sx={{ fontWeight: 800 }}>Cancel</Button>
           <Button
             onClick={handlePlaceBid}
             variant="contained"
             disabled={!bidAmount || parseFloat(bidAmount) <= auction.currentPrice}
+            sx={{ borderRadius: '12px', px: 4, fontWeight: 900 }}
           >
-            Place Bid
+            Confirm Bid
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 };
 

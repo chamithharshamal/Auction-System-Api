@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CardMedia,
-  CardActions,
   Button,
   Chip,
   Fab,
@@ -16,6 +15,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
+  Stack,
+  Paper,
+  alpha,
 } from '@mui/material';
 import {
   Add,
@@ -23,6 +26,7 @@ import {
   Edit,
   Delete,
   Visibility,
+  TrendingUp,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -81,14 +85,10 @@ const MyAuctionsPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'success';
-      case 'ENDED':
-        return 'default';
-      case 'CANCELLED':
-        return 'error';
-      default:
-        return 'warning';
+      case 'ACTIVE': return '#10B981';
+      case 'ENDED': return '#64748B';
+      case 'CANCELLED': return '#EF4444';
+      default: return '#F59E0B';
     }
   };
 
@@ -107,7 +107,6 @@ const MyAuctionsPage: React.FC = () => {
         setAuctionToDelete(null);
       } catch (error) {
         console.error('Failed to delete auction:', error);
-        alert('Failed to delete auction. It may have bids or is not in a valid state.');
       } finally {
         setLoading(false);
       }
@@ -124,163 +123,225 @@ const MyAuctionsPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 3, md: 4 } }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" component="h1">
-          My Auctions
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => navigate('/create-auction')}
-        >
-          Create Auction
-        </Button>
-      </Box>
-
-      {auctions && auctions.content.length > 0 ? (
-        <Grid container spacing={3}>
-          {auctions.content.map((auction) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={auction.id}>
-              <Card
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                  },
-                }}
-                onClick={() => navigate(`/auctions/${auction.id}`)}
-              >
-                {auction.imageUrls && auction.imageUrls.length > 0 && (
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={auction.imageUrls[0]}
-                    alt={auction.title}
-                  />
-                )}
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
-                    <Typography variant="h6" component="h3" noWrap>
-                      {auction.title}
-                    </Typography>
-                    <Chip
-                      label={auction.status}
-                      color={getStatusColor(auction.status) as any}
-                      size="small"
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {auction.description.substring(0, 100)}...
-                  </Typography>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6" color="primary.main">
-                      {formatPrice(auction.currentPrice)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {getTimeRemaining(auction.endDate)}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {auction.totalBids} bids
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    startIcon={<Visibility />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/auctions/${auction.id}`);
-                    }}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<Edit />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/edit-auction/${auction.id}`);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    startIcon={<Delete />}
-                    disabled={auction.totalBids > 0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(auction.id);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      ) : (
-        <Box textAlign="center" py={8}>
-          <Gavel sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No auctions created yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Start selling by creating your first auction
-          </Typography>
+    <Box sx={{ minHeight: '100vh', py: { xs: 8, md: 12 } }} className="page-fade-in">
+      <Container maxWidth="lg">
+        {/* Page Header */}
+        <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <Box>
+            <Typography variant="h2" sx={{ fontWeight: 900, mb: 1, letterSpacing: '-2px', fontFamily: 'Outfit, sans-serif' }}>
+              My Auctions
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+              Manage your auctions and check bids.
+            </Typography>
+          </Box>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => navigate('/create-auction')}
+            sx={{
+              height: 56,
+              px: 4,
+              borderRadius: '16px',
+              fontWeight: 900,
+              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              boxShadow: '0 8px 20px rgba(16, 185, 129, 0.25)',
+              display: { xs: 'none', sm: 'flex' }
+            }}
           >
-            Create Your First Auction
+            Start New Auction
           </Button>
         </Box>
-      )}
 
-      {/* Floating Action Button */}
+        {auctions && auctions.content.length > 0 ? (
+          <Grid container spacing={4}>
+            {auctions.content.map((auction) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={auction.id}>
+                <Card
+                  className="glass-panel"
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: '24px',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      borderColor: 'rgba(16, 185, 129, 0.3)',
+                      boxShadow: '0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(16, 185, 129, 0.1)'
+                    }
+                  }}
+                >
+                  <Box sx={{ position: 'relative' }}>
+                    <CardMedia
+                      component="img"
+                      height="240"
+                      image={auction.imageUrls?.[0] || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80'}
+                      alt={auction.title}
+                      sx={{ transition: 'transform 0.5s ease' }}
+                    />
+                    <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+                      <Chip
+                        label={auction.status}
+                        sx={{
+                          bgcolor: alpha(getStatusColor(auction.status), 0.2),
+                          color: getStatusColor(auction.status),
+                          fontWeight: 800,
+                          backdropFilter: 'blur(8px)',
+                          border: `1px solid ${alpha(getStatusColor(auction.status), 0.3)}`
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, fontFamily: 'Outfit, sans-serif' }} noWrap>
+                      {auction.title}
+                    </Typography>
+
+                    <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 0.5 }}>Current Price</Typography>
+                        <Typography variant="h6" sx={{ color: '#10B981', fontWeight: 900 }}>{formatPrice(auction.currentPrice)}</Typography>
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 0.5 }}>Ends In</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 700 }}>{getTimeRemaining(auction.endDate)}</Typography>
+                      </Box>
+                    </Stack>
+
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ color: 'text.secondary' }}>
+                      <TrendingUp sx={{ fontSize: 18, color: '#3B82F6' }} />
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{auction.totalBids} bids recorded</Typography>
+                    </Stack>
+                  </CardContent>
+
+                  <Box sx={{ p: 2, display: 'flex', gap: 1, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={<Visibility />}
+                      onClick={() => navigate(`/auctions/${auction.id}`)}
+                      sx={{ borderRadius: '12px', fontWeight: 700 }}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color="primary"
+                      startIcon={<Edit />}
+                      onClick={() => navigate(`/edit-auction/${auction.id}`)}
+                      sx={{ borderRadius: '12px', fontWeight: 700 }}
+                    >
+                      Edit
+                    </Button>
+                    <IconButton
+                      color="error"
+                      disabled={auction.totalBids > 0}
+                      onClick={() => handleDeleteClick(auction.id)}
+                      sx={{
+                        borderRadius: '12px',
+                        border: '1px solid',
+                        borderColor: 'error.main',
+                        '&.Mui-disabled': { opacity: 0.4, borderColor: 'rgba(255,255,255,0.1)' }
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Paper
+            className="glass-panel"
+            sx={{
+              p: 10,
+              textAlign: 'center',
+              borderRadius: '32px',
+              border: '2px dashed rgba(255,255,255,0.05)'
+            }}
+          >
+            <Box sx={{ width: 100, height: 100, borderRadius: '30px', bgcolor: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 4 }}>
+              <Gavel sx={{ fontSize: 48, color: '#3B82F6' }} />
+            </Box>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, fontFamily: 'Outfit, sans-serif' }}>
+              No Auctions Found
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 6, maxWidth: 400, mx: 'auto' }}>
+              You haven't started any auctions yet.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              size="large"
+              onClick={() => navigate('/create-auction')}
+              sx={{
+                height: 60,
+                px: 6,
+                borderRadius: '18px',
+                fontWeight: 900,
+                background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+                boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)'
+              }}
+            >
+              Start Your First Auction
+            </Button>
+          </Paper>
+        )}
+      </Container>
+
+      {/* FAB for Mobile */}
       <Fab
-        color="primary"
-        aria-label="create auction"
+        onClick={() => navigate('/create-auction')}
         sx={{
           position: 'fixed',
-          bottom: 16,
-          right: 16,
+          bottom: 32,
+          right: 32,
+          display: { xs: 'flex', sm: 'none' },
+          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+          color: 'white',
+          '&:hover': { transform: 'scale(1.1)' }
         }}
-        onClick={() => navigate('/create-auction')}
       >
         <Add />
       </Fab>
+
       <Dialog
         open={deleteDialogOpen}
         onClose={handleCloseDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: '24px',
+            bgcolor: '#0F172A',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)'
+          }
+        }}
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Confirm Deletion"}
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', fontFamily: 'Outfit, sans-serif' }}>Delete Auction?</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this auction? This action cannot be undone.
+          <DialogContentText sx={{ color: 'text.secondary' }}>
+            This will permanently remove the listing from the system. You can't undo this.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button onClick={handleCloseDeleteDialog} sx={{ fontWeight: 700, px: 3 }}>Cancel</Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+            autoFocus
+            sx={{ borderRadius: '12px', fontWeight: 900, px: 3 }}
+          >
             Delete
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 };
 

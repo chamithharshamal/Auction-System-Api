@@ -27,7 +27,7 @@ export const authService = {
       if (!token) {
         return false;
       }
-      
+
       const response = await api.post<ApiResponse<boolean>>('/auth/validate', {}, {
         headers: {
           'Authorization': `Bearer ${token}`
