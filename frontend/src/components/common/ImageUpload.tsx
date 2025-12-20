@@ -3,11 +3,8 @@ import {
     Box,
     Button,
     CircularProgress,
-    Typography,
-    Paper,
-    IconButton,
 } from '@mui/material';
-import { CloudUpload, Delete, Image as ImageIcon } from '@mui/icons-material';
+import { CloudUpload } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 

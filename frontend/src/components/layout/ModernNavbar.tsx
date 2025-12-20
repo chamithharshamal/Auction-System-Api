@@ -13,6 +13,9 @@ import {
   alpha,
   Badge,
 } from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { UserRole } from '../../types/api';
 import {
   Search as SearchIcon,
   Gavel,
@@ -22,10 +25,8 @@ import {
   Logout,
   Notifications,
   Favorite,
+  TrendingUp,
 } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { UserRole } from '../../types/api';
 import notificationService from '../../services/notificationService';
 import { webSocketService } from '../../services/webSocketService';
 
@@ -335,12 +336,16 @@ const ModernNavbar: React.FC = () => {
                   <Person sx={{ mr: 1.5, fontSize: 20 }} />
                   Profile
                 </MenuItem>
-                {hasRole(UserRole.SELLER) && (
-                  <MenuItem onClick={() => { navigate('/my-auctions'); handleMenuClose(); }}>
+                {hasRole(UserRole.SELLER) && [
+                  <MenuItem key="my-auctions" onClick={() => { navigate('/my-auctions'); handleMenuClose(); }}>
                     <Gavel sx={{ mr: 1.5, fontSize: 20 }} />
                     My Auctions
+                  </MenuItem>,
+                  <MenuItem key="analytics" onClick={() => { navigate('/analytics'); handleMenuClose(); }}>
+                    <TrendingUp sx={{ mr: 1.5, fontSize: 20 }} />
+                    Analytics
                   </MenuItem>
-                )}
+                ]}
                 <MenuItem onClick={() => { navigate('/watchlist'); handleMenuClose(); }}>
                   <Favorite sx={{ mr: 1.5, fontSize: 20 }} />
                   Watchlist

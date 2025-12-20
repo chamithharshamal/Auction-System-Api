@@ -15,7 +15,6 @@ import {
   Select,
   MenuItem,
   Pagination,
-  InputAdornment,
   Paper,
   ToggleButton,
   ToggleButtonGroup,
@@ -157,10 +156,6 @@ const ModernAuctionListPage: React.FC = () => {
     }
   };
 
-  const handleSearch = () => {
-    setPage(0);
-    loadAuctions();
-  };
 
   const handleClearFilters = () => {
     setSearchQuery('');

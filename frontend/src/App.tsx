@@ -19,6 +19,7 @@ import UserProfilePage from './pages/user/UserProfilePage';
 import MyAuctionsPage from './pages/user/MyAuctionsPage';
 import MyBidsPage from './pages/user/MyBidsPage';
 import WatchlistPage from './pages/user/WatchlistPage';
+import SellerAnalyticsPage from './pages/user/SellerAnalyticsPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route component
@@ -107,6 +108,14 @@ const AppRoutes: React.FC = () => {
             element={
               <ProtectedRoute requiredRole="SELLER">
                 <CreateAuctionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute requiredRole="SELLER">
+                <SellerAnalyticsPage />
               </ProtectedRoute>
             }
           />
