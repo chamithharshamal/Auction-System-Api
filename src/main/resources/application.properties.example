@@ -1,0 +1,36 @@
+# Server Configuration
+server.port=8080
+
+# Spring Data MongoDB Configuration
+# Replace with your local or Atlas URI
+spring.data.mongodb.uri=mongodb://localhost:27017/auction_db
+
+# Elasticsearch Configuration
+spring.elasticsearch.uris=http://localhost:9200
+
+# Security (JWT)
+# These should be overridden in production using environment variables or a separate profile
+jwt.secret=replace_with_a_secure_random_key_for_production
+jwt.expiration=86400000
+
+# Mail Configuration
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your-email@example.com
+spring.mail.password=your-app-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Application Specific Email Settings
+app.email.from-name=Auction App
+app.email.base-url=http://localhost:5173
+app.email.enabled=false
+
+# File Upload
+app.upload.dir=uploads
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# Logging Configuration
+logging.level.org.springframework.web=INFO
+logging.level.com.springboot_projects.auction_app_api=DEBUG
