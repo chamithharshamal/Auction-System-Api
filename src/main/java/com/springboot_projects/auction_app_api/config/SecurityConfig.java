@@ -63,6 +63,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                         // Public endpoints
+                        .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/users/check-username/**").permitAll()
                         .requestMatchers("/api/users/check-email/**").permitAll()
@@ -76,10 +77,10 @@ public class SecurityConfig {
 
                         // User management - Admin access for listing, authenticated for individual
                         // access
-                        .requestMatchers("GET", "/api/users").hasRole("ADMIN")
-                        .requestMatchers("GET", "/api/users/*").authenticated()
-                        .requestMatchers("PUT", "/api/users/*").authenticated()
-                        .requestMatchers("DELETE", "/api/users/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
 
                         // Auction endpoints - Role-based access
                         .requestMatchers("/api/auctions").permitAll() // View auctions
@@ -93,16 +94,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/auctions/{id}").permitAll() // View specific auction
 
                         // Auction management - Seller or Bidder (Allowing Bidders to become Sellers)
-                        .requestMatchers("POST", "/api/auctions").hasAnyRole("SELLER", "BIDDER")
-                        .requestMatchers("PUT", "/api/auctions/*").hasAnyRole("SELLER", "BIDDER")
-                        .requestMatchers("PATCH", "/api/auctions/*/start").hasAnyRole("SELLER", "BIDDER")
-                        .requestMatchers("PATCH", "/api/auctions/*/end").hasAnyRole("SELLER", "BIDDER")
-                        .requestMatchers("PATCH", "/api/auctions/*/cancel").hasAnyRole("SELLER", "BIDDER")
-                        .requestMatchers("DELETE", "/api/auctions/*").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers(HttpMethod.POST, "/api/auctions").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers(HttpMethod.PUT, "/api/auctions/*").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/auctions/*/start").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/auctions/*/end").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/auctions/*/cancel").hasAnyRole("SELLER", "BIDDER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/auctions/*").hasAnyRole("SELLER", "BIDDER")
 
                         // Bidding - Bidder only
-                        .requestMatchers("POST", "/api/bids/**").hasRole("BIDDER")
-                        .requestMatchers("PATCH", "/api/bids/*/cancel").hasRole("BIDDER")
+                        .requestMatchers(HttpMethod.POST, "/api/bids/**").hasRole("BIDDER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/bids/*/cancel").hasRole("BIDDER")
 
                         // Bid viewing - Public access for viewing bids
                         // Bid viewing - Public access for viewing bids
