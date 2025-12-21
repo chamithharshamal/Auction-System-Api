@@ -27,6 +27,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import type { AuctionItem } from '../types/api';
 import { auctionService } from '../services/auctionService';
+import { resolveImageUrl } from '../utils/urlUtils';
 
 const ModernHomePage: React.FC = () => {
     const navigate = useNavigate();
@@ -238,7 +239,7 @@ const ModernHomePage: React.FC = () => {
                                         <Box sx={{ position: 'relative', borderRadius: '18px', overflow: 'hidden', height: 280 }}>
                                             <CardMedia
                                                 component="img"
-                                                image={auction.imageUrls?.[0] || 'https://images.unsplash.com/photo-1579546678183-a84fe535194d'}
+                                                image={resolveImageUrl(auction.imageUrls?.[0])}
                                                 sx={{ height: '100%', objectFit: 'cover' }}
                                             />
                                             <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
@@ -312,7 +313,7 @@ const ModernHomePage: React.FC = () => {
                                         }}
                                     >
                                         <Avatar
-                                            src={auction.imageUrls?.[0]}
+                                            src={resolveImageUrl(auction.imageUrls?.[0])}
                                             variant="rounded"
                                             sx={{ width: 80, height: 80, borderRadius: '12px' }}
                                         />

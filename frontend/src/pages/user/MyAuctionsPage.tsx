@@ -32,6 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import type { AuctionItem, PaginatedResponse } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
+import { resolveImageUrl } from '../../utils/urlUtils';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const MyAuctionsPage: React.FC = () => {
@@ -177,7 +178,7 @@ const MyAuctionsPage: React.FC = () => {
                     <CardMedia
                       component="img"
                       height="240"
-                      image={auction.imageUrls?.[0] || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80'}
+                      image={resolveImageUrl(auction.imageUrls?.[0])}
                       alt={auction.title}
                       sx={{ transition: 'transform 0.5s ease' }}
                     />

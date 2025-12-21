@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { watchlistService } from '../../services/watchlistService';
 import type { AuctionItem } from '../../types/api';
+import { resolveImageUrl } from '../../utils/urlUtils';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const WatchlistPage: React.FC = () => {
@@ -145,7 +146,7 @@ const WatchlistPage: React.FC = () => {
                                         <CardMedia
                                             component="img"
                                             height="240"
-                                            image={auction.imageUrls?.[0] || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80'}
+                                            image={resolveImageUrl(auction.imageUrls?.[0])}
                                             alt={auction.title}
                                             sx={{ transition: 'transform 0.5s ease' }}
                                         />
