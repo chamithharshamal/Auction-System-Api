@@ -38,6 +38,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import PriceTrendsChart from '../../components/auction/PriceTrendsChart';
 import { webSocketService } from '../../services/webSocketService';
+import { resolveImageUrl } from '../../utils/urlUtils';
 
 const AuctionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -147,7 +148,7 @@ const AuctionDetailPage: React.FC = () => {
             <Box sx={{ position: 'relative', borderRadius: '32px', overflow: 'hidden', mb: 6 }}>
               <CardMedia
                 component="img"
-                image={auction.imageUrls?.[0] || 'https://images.unsplash.com/photo-1579546678183-a84fe535194d'}
+                image={resolveImageUrl(auction.imageUrls?.[0]) || 'https://images.unsplash.com/photo-1579546678183-a84fe535194d'}
                 sx={{ height: { xs: 400, md: 600 }, objectFit: 'cover' }}
               />
               <Box sx={{ position: 'absolute', top: 24, left: 24, display: 'flex', gap: 2 }}>

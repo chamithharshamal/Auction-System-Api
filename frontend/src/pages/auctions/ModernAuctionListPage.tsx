@@ -41,6 +41,7 @@ import type { AuctionItem, PaginatedResponse } from '../../types/api';
 import { auctionService } from '../../services/auctionService';
 import { watchlistService } from '../../services/watchlistService';
 import { useAuth } from '../../contexts/AuthContext';
+import { resolveImageUrl } from '../../utils/urlUtils';
 
 const ModernAuctionListPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -379,7 +380,7 @@ const ModernAuctionListPage: React.FC = () => {
                         <Box sx={{ position: 'relative', width: viewMode === 'list' ? 320 : '100%', borderRadius: '18px', overflow: 'hidden' }}>
                           <CardMedia
                             component="img"
-                            image={auction.imageUrls?.[0] || 'https://images.unsplash.com/photo-1579546678183-a84fe535194d'}
+                            image={resolveImageUrl(auction.imageUrls?.[0])}
                             sx={{ height: viewMode === 'list' ? '100%' : 240, objectFit: 'cover' }}
                           />
                           <IconButton
