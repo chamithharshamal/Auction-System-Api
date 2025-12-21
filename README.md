@@ -2,6 +2,8 @@
 
 AuctionHub is a high-performance, real-time auction platform built with a robust Spring Boot backend and a sleek, modern React frontend. It features live bidding through WebSockets, advanced search capabilities with Elasticsearch, and a personalized user experience with watchlists and analytics.
 
+<img width="1012" height="877" alt="auction 1" src="https://github.com/user-attachments/assets/e7b3ffd0-1c73-4ec7-84bb-1fdbf4b3e913" />
+
 ## 🚀 Key Features
 
 - **Real-time Bidding**: Instant bid updates and auction status changes powered by WebSockets.
